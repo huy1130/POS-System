@@ -7,8 +7,8 @@ import { AuthProvider } from "@/context/AuthContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "POS System",
-  description: "Point of Sale and Inventory Management System",
+  title: "Lumio",
+  description: "Hệ thống quản lý bán hàng hiện đại dành cho doanh nghiệp F&B",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

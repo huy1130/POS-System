@@ -68,7 +68,7 @@ export default function LoginPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
               <Layers className="h-[18px] w-[18px] text-white" />
             </div>
-            <span className="text-base font-bold tracking-tight text-gray-900 dark:text-white">POS System</span>
+            <span className="text-base font-bold tracking-tight text-gray-900 dark:text-white">Lumio</span>
           </Link>
 
           <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ export default function LoginPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Chào mừng trở lại</h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Đăng nhập vào POS System</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Đăng nhập vào Lumio</p>
             </div>
           </div>
 

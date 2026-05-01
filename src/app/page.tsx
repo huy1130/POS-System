@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
-  Layers, ArrowRight, Check, BarChart3, Shield, Zap,
+  ArrowRight, Check, BarChart3, Shield, Zap,
   ShoppingCart, Package, DollarSign, Users, TrendingUp,
-  Star, Menu, Play,
+  Star, Play, Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { mockSubscriptions } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
@@ -72,129 +71,13 @@ const FEATURES = [
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-const NAV_LINKS = [
-  { label: "Features", href: "#features" },
-  { label: "Pricing",  href: "#pricing"  },
-  { label: "Docs",     href: "#docs"     },
-  { label: "Blog",     href: "#blog"     },
-];
-
 export default function LandingPage() {
-  const [mobileOpen,     setMobileOpen]     = useState(false);
-  const [activeSection,  setActiveSection]  = useState("");
-  const [scrolled,       setScrolled]       = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    const ids = ["features", "pricing"];
-    const observers = ids.map((id) => {
-      const el = document.getElementById(id);
-      if (!el) return null;
-      const obs = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) setActiveSection(id); },
-        { threshold: 0.25, rootMargin: "-64px 0px 0px 0px" }
-      );
-      obs.observe(el);
-      return obs;
-    });
-    return () => observers.forEach((o) => o?.disconnect());
-  }, []);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
 
       {/* ══ NAVBAR ══════════════════════════════════════════════════════════ */}
-      <nav className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-all duration-300",
-        scrolled
-          ? "border-b border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl shadow-sm"
-          : "border-b border-transparent bg-white/60 dark:bg-gray-950/60 backdrop-blur-md"
-      )}>
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-              <Layers className="h-[18px] w-[18px] text-white" />
-            </div>
-            <span className="text-base font-bold tracking-tight text-gray-900 dark:text-white">POS System</span>
-          </Link>
-
-          {/* Desktop links */}
-          <div className="hidden items-center gap-7 md:flex">
-            {NAV_LINKS.map(({ label, href }) => {
-              const isActive = activeSection === label.toLowerCase();
-              return (
-                <a
-                  key={label}
-                  href={href}
-                  className={cn(
-                    "relative text-sm transition-colors pb-0.5",
-                    isActive
-                      ? "text-indigo-600 dark:text-indigo-400 font-semibold"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                  )}
-                >
-                  {label}
-                  {isActive && (
-                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
-                  )}
-                </a>
-              );
-            })}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Link href="/login">
-              <Button variant="outline" size="sm" className="hidden border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 md:flex">
-                Đăng nhập
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm">
-                Đăng ký
-              </Button>
-            </Link>
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-              <Menu className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="border-t border-gray-100 dark:border-gray-800 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md px-6 py-4 space-y-1 md:hidden">
-            {NAV_LINKS.map(({ label, href }) => {
-              const isActive = activeSection === label.toLowerCase();
-              return (
-                <a
-                  key={label}
-                  href={href}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive
-                      ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-semibold"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
-                  )}
-                >
-                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0" />}
-                  {label}
-                </a>
-              );
-            })}
-            <Link href="/login" onClick={() => setMobileOpen(false)} className="flex items-center rounded-lg px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-              Đăng nhập
-            </Link>
-          </div>
-        )}
-      </nav>
+      <Navbar />
 
       {/* ══ HERO ════════════════════════════════════════════════════════════ */}
       <section className="relative flex items-center overflow-hidden pt-16 min-h-[88vh]">
@@ -222,52 +105,51 @@ export default function LandingPage() {
           bg-gradient-to-t from-white dark:from-gray-950 to-transparent" />
 
         {/* ── Content ──────────────────────────────────────────────────── */}
-        <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-20">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.2fr_1fr]">
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-8 py-24">
+          <div className="grid items-center gap-12 lg:grid-cols-[1.35fr_1fr]">
 
             {/* LEFT: Text content */}
-            <motion.div initial="hidden" animate="show" variants={stagger} className="max-w-xl">
+            <motion.div initial="hidden" animate="show" variants={stagger} className="max-w-2xl">
 
-              {/* Heading — large bold black, matching screenshot style */}
+              {/* Heading — all dark, very large */}
               <motion.h1
                 variants={fadeUp}
-                className="mb-5 text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1] sm:text-[3.5rem]"
+                className="mb-6 text-[3.25rem] sm:text-[4rem] lg:text-[4.5rem] font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.08]"
               >
-                Phần mềm quản lý bán hàng
-                <span className="block text-indigo-600 dark:text-indigo-400">phổ biến nhất</span>
+                Phần mềm quản lý bán hàng phổ biến nhất
               </motion.h1>
 
               {/* Description */}
-              <motion.p variants={fadeUp} className="mb-8 max-w-sm text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+              <motion.p variants={fadeUp} className="mb-10 max-w-md text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
                 Hệ thống quản lý ứng dụng hiện đại và hiệu quả, giúp doanh nghiệp F&amp;B phát triển bền vững.
               </motion.p>
 
               {/* CTA buttons */}
-              <motion.div variants={fadeUp} className="mb-10 flex flex-wrap items-center gap-3">
+              <motion.div variants={fadeUp} className="mb-12 flex flex-wrap items-center gap-4">
                 <Link href="/register">
-                  <Button size="lg" className="h-11 bg-indigo-600 hover:bg-indigo-500 px-7 text-sm font-semibold shadow-lg shadow-indigo-200/60 dark:shadow-indigo-900/40 rounded-lg">
+                  <Button size="lg" className="h-13 px-9 text-base font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-200/60 dark:shadow-indigo-900/40 rounded-xl">
                     Dùng thử miễn phí
                   </Button>
                 </Link>
                 <Link href="#features">
-                  <Button size="lg" variant="outline" className="h-11 border-gray-400 dark:border-gray-600 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 px-7 text-sm rounded-lg">
+                  <Button size="lg" variant="outline" className="h-13 px-9 text-base font-semibold border-2 border-indigo-500 dark:border-indigo-400 bg-white/80 dark:bg-gray-900/80 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl backdrop-blur-sm">
                     Khám phá
                   </Button>
                 </Link>
               </motion.div>
 
-              {/* Stats — clean white cards, large blue number */}
-              <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
+              {/* Stats — large white cards with big blue numbers */}
+              <motion.div variants={fadeUp} className="flex flex-wrap gap-5">
                 {HERO_STATS.map((s, i) => (
                   <div
                     key={i}
-                    className="rounded-xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm
-                      border border-gray-200/60 dark:border-gray-700/60
-                      shadow-md shadow-gray-100/80 dark:shadow-gray-950/40
-                      px-6 py-4 min-w-[160px]"
+                    className="rounded-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm
+                      border border-gray-100 dark:border-gray-700/60
+                      shadow-lg shadow-gray-100/60 dark:shadow-gray-950/40
+                      px-8 py-5 min-w-[200px]"
                   >
-                    <p className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 leading-none">{s.value}</p>
-                    <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400 leading-snug">{s.label}</p>
+                    <p className="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 leading-none">{s.value}</p>
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
                   </div>
                 ))}
               </motion.div>
@@ -359,7 +241,7 @@ export default function LandingPage() {
                   From the counter<br />to the cloud
                 </h2>
                 <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-                  Whether you run a coffee shop, bakery, or restaurant chain — POS System gives your team
+                  Whether you run a coffee shop, bakery, or restaurant chain — Lumio gives your team
                   the tools to serve faster, manage smarter, and grow confidently.
                 </p>
                 <div className="flex flex-col gap-2">
@@ -482,7 +364,7 @@ export default function LandingPage() {
               <Badge className="mb-5 border-white/20 bg-white/10 text-white">14-day free trial · No credit card</Badge>
               <h2 className="text-3xl font-extrabold sm:text-4xl mb-4 text-white">Ready to grow your business?</h2>
               <p className="text-indigo-100 mb-8 max-w-md mx-auto">
-                Join thousands of F&amp;B businesses using POS System to run smarter operations every day.
+                Join thousands of F&amp;B businesses using Lumio to run smarter operations every day.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/register">
