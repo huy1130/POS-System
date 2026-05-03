@@ -19,20 +19,27 @@ export function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const isHome = pathname === "/";
+
+  // navbar có background khi không ở trang chủ (các marketing sub-pages có bg màu)
+  const navBg = isHome
+    ? "border-transparent bg-transparent"
+    : "border-b border-gray-200/60 dark:border-gray-800/60 bg-white/90 dark:bg-gray-950/90 backdrop-blur-xl";
+
   return (
-    <nav className="fixed top-0 inset-x-0 z-50 border-b border-transparent bg-transparent transition-all duration-300">
+    <nav className={cn("fixed top-0 inset-x-0 z-50 transition-all duration-300", navBg)}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
             <Layers className="h-[18px] w-[18px] text-white" />
           </div>
           <span className="text-base font-bold tracking-tight text-gray-900 dark:text-white">Lumio</span>
         </Link>
 
-        {/* Desktop links */}
-        <div className="hidden items-center gap-7 md:flex">
+        {/* Desktop nav links */}
+        <div className="hidden items-center gap-1 md:flex">
           {NAV_LINKS.map(({ label, href }) => {
             const isActive = pathname === href || pathname.startsWith(href + "/");
             return (
@@ -40,41 +47,57 @@ export function Navbar() {
                 key={label}
                 href={href}
                 className={cn(
-                  "relative text-sm transition-colors pb-0.5",
+                  "relative px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "text-indigo-600 dark:text-indigo-400 font-semibold"
-                    : "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200 dark:shadow-indigo-900/40"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/70 dark:hover:bg-white/8"
                 )}
               >
                 {label}
-                {isActive && (
-                  <span className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
-                )}
               </Link>
             );
           })}
         </div>
 
-        {/* Right side actions */}
-        <div className="flex items-center gap-2">
+        {/* Right: actions */}
+        <div className="flex items-center gap-2 shrink-0">
           <ThemeToggle />
-          <Link href="/login">
+
+          {/* Login — filled when active */}
+          <Link href="/login" className="hidden md:block">
             <Button
-              variant="outline"
+              variant={pathname === "/login" ? "default" : "outline"}
               size="sm"
-              className="hidden md:flex border-gray-400/60 dark:border-gray-500/60 bg-white/20 dark:bg-white/10 text-gray-800 dark:text-gray-200 hover:bg-white/40 dark:hover:bg-white/20 backdrop-blur-sm"
+              className={cn(
+                "transition-all duration-200",
+                pathname === "/login"
+                  ? "bg-indigo-600 hover:bg-indigo-500 text-white border-transparent shadow-sm"
+                  : "border-gray-400/60 dark:border-gray-500/60 bg-white/20 dark:bg-white/10 text-gray-800 dark:text-gray-200 hover:bg-white/40 dark:hover:bg-white/20 backdrop-blur-sm"
+              )}
             >
               Đăng nhập
             </Button>
           </Link>
-          <Link href="/register">
-            <Button size="sm" className="hidden md:flex bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-sm backdrop-blur-sm">
+
+          {/* Register — filled when active */}
+          <Link href="/register" className="hidden md:block">
+            <Button
+              size="sm"
+              className={cn(
+                "transition-all duration-200 text-white",
+                pathname === "/register"
+                  ? "bg-indigo-700 hover:bg-indigo-600 shadow-md ring-2 ring-indigo-400/40"
+                  : "bg-indigo-600/90 hover:bg-indigo-600 shadow-sm backdrop-blur-sm"
+              )}
+            >
               Đăng ký
             </Button>
           </Link>
+
+          {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            className="md:hidden text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -84,7 +107,7 @@ export function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t border-white/20 dark:border-white/10 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm px-6 py-4 space-y-1 md:hidden">
+        <div className="border-t border-gray-200/60 dark:border-gray-800/60 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md px-4 py-3 space-y-1 md:hidden">
           {NAV_LINKS.map(({ label, href }) => {
             const isActive = pathname === href || pathname.startsWith(href + "/");
             return (
@@ -93,25 +116,43 @@ export function Navbar() {
                 href={href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                  "flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium transition-all",
                   isActive
-                    ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-semibold"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                    ? "bg-indigo-600 text-white"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-white"
                 )}
               >
-                {isActive && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0" />
-                )}
+                {isActive && <span className="h-1.5 w-1.5 rounded-full bg-white shrink-0" />}
                 {label}
               </Link>
             );
           })}
-          <div className="pt-2 flex gap-2">
+
+          <div className="pt-2 pb-1 flex gap-2">
             <Link href="/login" className="flex-1" onClick={() => setMobileOpen(false)}>
-              <Button variant="outline" size="sm" className="w-full">Đăng nhập</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "w-full transition-all",
+                  pathname === "/login" && "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400"
+                )}
+              >
+                Đăng nhập
+              </Button>
             </Link>
             <Link href="/register" className="flex-1" onClick={() => setMobileOpen(false)}>
-              <Button size="sm" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white">Đăng ký</Button>
+              <Button
+                size="sm"
+                className={cn(
+                  "w-full text-white transition-all",
+                  pathname === "/register"
+                    ? "bg-indigo-700 ring-2 ring-indigo-400/40"
+                    : "bg-indigo-600 hover:bg-indigo-500"
+                )}
+              >
+                Đăng ký
+              </Button>
             </Link>
           </div>
         </div>
