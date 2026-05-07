@@ -66,10 +66,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col" style={{ backgroundColor: BRAND }}>
+    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900">
       <AuthNavbar />
 
-      {/* ── Full-page purple background with floating card ──────────────── */}
       <main className="flex flex-1 items-center justify-center px-6 pt-24 pb-12">
         <div className="mx-auto w-full max-w-5xl flex items-center gap-14">
 
@@ -78,34 +77,34 @@ export default function RegisterPage() {
             initial={{ opacity: 0, x: -24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="hidden lg:block flex-1 text-white"
+            className="hidden lg:block flex-1"
           >
-            <h2 className="text-4xl font-extrabold leading-tight mb-4">
+            <h2 className="text-4xl font-extrabold leading-tight mb-4 text-gray-900 dark:text-white">
               Bắt đầu hành trình<br />của bạn với Lumio
             </h2>
-            <p className="text-white/70 text-base leading-relaxed mb-10 max-w-xs">
+            <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed mb-10 max-w-xs">
               Tạo tài khoản miễn phí và khám phá toàn bộ tính năng quản lý bán hàng F&amp;B.
             </p>
             <ul className="space-y-4">
               {FEATURES.map((f) => (
                 <li key={f} className="flex items-center gap-3">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/25">
-                    <Check className="h-3 w-3 text-white" />
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/40">
+                    <Check className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
                   </div>
-                  <span className="text-white/90 text-sm font-medium">{f}</span>
+                  <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">{f}</span>
                 </li>
               ))}
             </ul>
           </motion.div>
 
-          {/* ── RIGHT: Floating card ─────────────────────────────────────── */}
+          {/* ── RIGHT: Indigo card ───────────────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
             className="w-full max-w-[420px] shrink-0"
           >
-            <div className="rounded-2xl bg-white dark:bg-gray-900 shadow-2xl overflow-hidden">
+            <div className="rounded-2xl bg-indigo-600 dark:bg-indigo-600/95 shadow-2xl shadow-indigo-300/30 dark:shadow-indigo-950/40 overflow-hidden">
 
               <AnimatePresence mode="wait">
                 {success ? (
@@ -120,13 +119,13 @@ export default function RegisterPage() {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
-                      className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30 ring-4 ring-green-200 dark:ring-green-800"
+                      className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 ring-4 ring-white/30"
                     >
-                      <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+                      <CheckCircle2 className="h-10 w-10 text-white" />
                     </motion.div>
                     <div>
-                      <p className="text-xl font-bold text-gray-900 dark:text-white">Tài khoản đã được tạo!</p>
-                      <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-xl font-bold text-white">Tài khoản đã được tạo!</p>
+                      <p className="mt-1.5 text-sm text-indigo-200">
                         Đang chuyển hướng đến trang đăng nhập…
                       </p>
                     </div>
@@ -136,9 +135,9 @@ export default function RegisterPage() {
                   <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
                     {/* Card header */}
-                    <div className="px-8 pt-8 pb-6 border-b border-gray-100 dark:border-gray-800">
-                      <h1 className="text-xl font-bold text-gray-900 dark:text-white">Tạo tài khoản</h1>
-                      <p className="mt-0.5 text-sm text-gray-400 dark:text-gray-500">Tham gia Lumio ngay hôm nay</p>
+                    <div className="px-8 pt-8 pb-6 border-b border-indigo-500/50">
+                      <h1 className="text-xl font-bold text-white">Tạo tài khoản</h1>
+                      <p className="mt-0.5 text-sm text-indigo-200">Tham gia Lumio ngay hôm nay</p>
                     </div>
 
                     {/* Card body */}
@@ -147,32 +146,32 @@ export default function RegisterPage() {
 
                         {/* Full name */}
                         <div className="space-y-1.5">
-                          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Họ và tên</Label>
+                          <Label className="text-sm font-medium text-indigo-100">Họ và tên</Label>
                           <Input
                             placeholder="Nguyễn Văn A"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
-                            className="h-11 rounded-lg border-gray-200 dark:border-gray-700 bg-[#F5F6FA] dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus-visible:ring-[#5B4EE8]"
+                            className="h-11 rounded-lg border-indigo-400/60 bg-indigo-500/40 text-white placeholder:text-indigo-300 focus-visible:ring-white/40 focus-visible:border-white/60"
                           />
                         </div>
 
                         {/* Email */}
                         <div className="space-y-1.5">
-                          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</Label>
+                          <Label className="text-sm font-medium text-indigo-100">Email</Label>
                           <Input
                             type="email"
                             placeholder="you@lumio.app"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="h-11 rounded-lg border-gray-200 dark:border-gray-700 bg-[#F5F6FA] dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus-visible:ring-[#5B4EE8]"
+                            className="h-11 rounded-lg border-indigo-400/60 bg-indigo-500/40 text-white placeholder:text-indigo-300 focus-visible:ring-white/40 focus-visible:border-white/60"
                           />
                         </div>
 
                         {/* Password + strength bar */}
                         <div className="space-y-1.5">
-                          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Mật khẩu</Label>
+                          <Label className="text-sm font-medium text-indigo-100">Mật khẩu</Label>
                           <div className="relative">
                             <Input
                               type={showPw ? "text" : "password"}
@@ -180,12 +179,12 @@ export default function RegisterPage() {
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
                               required
-                              className="h-11 rounded-lg border-gray-200 dark:border-gray-700 bg-[#F5F6FA] dark:bg-gray-800 pr-10 text-gray-900 dark:text-white placeholder:text-gray-400 focus-visible:ring-[#5B4EE8]"
+                              className="h-11 rounded-lg border-indigo-400/60 bg-indigo-500/40 text-white placeholder:text-indigo-300 pr-10 focus-visible:ring-white/40 focus-visible:border-white/60"
                             />
                             <button
                               type="button"
                               onClick={() => setShowPw(!showPw)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-300 hover:text-white transition-colors"
                             >
                               {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
@@ -200,7 +199,7 @@ export default function RegisterPage() {
                               >
                                 <div className="flex gap-1 pt-1">
                                   {[0, 1, 2, 3].map((i) => (
-                                    <div key={i} className="h-1 flex-1 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                    <div key={i} className="h-1 flex-1 rounded-full bg-indigo-400/30 overflow-hidden">
                                       <motion.div
                                         className={cn("h-full rounded-full", i < strength.score ? strength.color : "")}
                                         initial={{ width: "0%" }}
@@ -212,7 +211,7 @@ export default function RegisterPage() {
                                 </div>
                                 <p className={cn(
                                   "text-xs font-medium",
-                                  strength.score <= 1 ? "text-red-500" : strength.score === 2 ? "text-amber-500" : "text-green-600"
+                                  strength.score <= 1 ? "text-red-300" : strength.score === 2 ? "text-amber-300" : "text-green-300"
                                 )}>
                                   {strength.label}
                                 </p>
@@ -223,7 +222,7 @@ export default function RegisterPage() {
 
                         {/* Confirm password */}
                         <div className="space-y-1.5">
-                          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Xác nhận mật khẩu</Label>
+                          <Label className="text-sm font-medium text-indigo-100">Xác nhận mật khẩu</Label>
                           <div className="relative">
                             <Input
                               type={showCf ? "text" : "password"}
@@ -232,20 +231,20 @@ export default function RegisterPage() {
                               onChange={(e) => setConfirm(e.target.value)}
                               required
                               className={cn(
-                                "h-11 rounded-lg border-gray-200 dark:border-gray-700 bg-[#F5F6FA] dark:bg-gray-800 pr-10 text-gray-900 dark:text-white placeholder:text-gray-400 focus-visible:ring-[#5B4EE8]",
-                                confirm.length > 0 && (matching ? "border-green-400" : "border-red-400 dark:border-red-500")
+                                "h-11 rounded-lg border-indigo-400/60 bg-indigo-500/40 text-white placeholder:text-indigo-300 pr-10 focus-visible:ring-white/40",
+                                confirm.length > 0 && (matching ? "border-green-400/70" : "border-red-400/70")
                               )}
                             />
                             <div className="absolute right-3 top-1/2 -translate-y-1/2">
                               {confirm.length > 0 && matching ? (
                                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400 }}>
-                                  <Check className="h-4 w-4 text-green-500" />
+                                  <Check className="h-4 w-4 text-green-400" />
                                 </motion.div>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() => setShowCf(!showCf)}
-                                  className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                                  className="text-indigo-300 hover:text-white transition-colors"
                                 >
                                   {showCf ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
@@ -258,7 +257,7 @@ export default function RegisterPage() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="text-xs text-red-500"
+                                className="text-xs text-red-300"
                               >
                                 Mật khẩu không khớp
                               </motion.p>
@@ -272,18 +271,18 @@ export default function RegisterPage() {
                             onClick={() => setTerms(!terms)}
                             className={cn(
                               "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
-                              terms ? "border-[#5B4EE8] bg-[#5B4EE8]" : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                              terms ? "border-white bg-white" : "border-indigo-400/60 bg-indigo-500/30"
                             )}
                           >
-                            {terms && <Check className="h-2.5 w-2.5 text-white" />}
+                            {terms && <Check className="h-2.5 w-2.5 text-indigo-600" />}
                           </div>
-                          <span className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                          <span className="text-sm text-indigo-200 leading-relaxed">
                             Tôi đồng ý với{" "}
-                            <button type="button" className="font-medium hover:opacity-75 transition-opacity underline-offset-2 hover:underline" style={{ color: BRAND }}>
+                            <button type="button" className="font-medium text-white hover:opacity-80 transition-opacity underline-offset-2 hover:underline">
                               Điều khoản dịch vụ
                             </button>
                             {" "}và{" "}
-                            <button type="button" className="font-medium hover:opacity-75 transition-opacity underline-offset-2 hover:underline" style={{ color: BRAND }}>
+                            <button type="button" className="font-medium text-white hover:opacity-80 transition-opacity underline-offset-2 hover:underline">
                               Chính sách bảo mật
                             </button>
                           </span>
@@ -293,8 +292,7 @@ export default function RegisterPage() {
                         <Button
                           type="submit"
                           disabled={!canSubmit || loading}
-                          className="w-full h-11 rounded-lg font-semibold text-white text-sm disabled:opacity-40"
-                          style={{ backgroundColor: BRAND }}
+                          className="w-full h-11 rounded-lg font-semibold bg-white text-indigo-600 hover:bg-indigo-50 text-sm shadow-sm disabled:opacity-40"
                         >
                           {loading ? (
                             <span className="flex items-center gap-2">
@@ -304,7 +302,7 @@ export default function RegisterPage() {
                           ) : "Tạo tài khoản"}
                         </Button>
 
-                        <p className="text-center text-[11px] text-gray-400 dark:text-gray-500">
+                        <p className="text-center text-[11px] text-indigo-300">
                           Demo — quá trình đăng ký được mô phỏng
                         </p>
 
@@ -312,9 +310,9 @@ export default function RegisterPage() {
                     </div>
 
                     {/* Card footer */}
-                    <div className="border-t border-gray-100 dark:border-gray-800 px-8 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                    <div className="border-t border-indigo-500/50 px-8 py-4 text-center text-sm text-indigo-200">
                       Đã có tài khoản?{" "}
-                      <Link href="/login" className="font-semibold hover:opacity-75 transition-opacity" style={{ color: BRAND }}>
+                      <Link href="/login" className="font-semibold text-white hover:opacity-80 transition-opacity">
                         Đăng nhập
                       </Link>
                     </div>

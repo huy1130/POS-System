@@ -66,10 +66,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col" style={{ backgroundColor: BRAND }}>
+    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900">
       <AuthNavbar />
 
-      {/* ── Full-page purple background with floating card ──────────────── */}
       <main className="flex flex-1 items-center justify-center px-6 pt-24 pb-12">
         <div className="mx-auto w-full max-w-5xl flex items-center gap-14">
 
@@ -78,39 +77,39 @@ export default function LoginPage() {
             initial={{ opacity: 0, x: -24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="hidden lg:block flex-1 text-white"
+            className="hidden lg:block flex-1"
           >
-            <h2 className="text-4xl font-extrabold leading-tight mb-4">
+            <h2 className="text-4xl font-extrabold leading-tight mb-4 text-gray-900 dark:text-white">
               Quản lý bán hàng<br />thông minh
             </h2>
-            <p className="text-white/70 text-base leading-relaxed mb-10 max-w-xs">
+            <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed mb-10 max-w-xs">
               Nền tảng F&amp;B hiện đại, từ đơn hàng đến báo cáo.
             </p>
             <ul className="space-y-4">
               {FEATURES.map((f) => (
                 <li key={f} className="flex items-center gap-3">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/25">
-                    <Check className="h-3 w-3 text-white" />
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/40">
+                    <Check className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
                   </div>
-                  <span className="text-white/90 text-sm font-medium">{f}</span>
+                  <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">{f}</span>
                 </li>
               ))}
             </ul>
           </motion.div>
 
-          {/* ── RIGHT: Floating card ─────────────────────────────────────── */}
+          {/* ── RIGHT: Indigo card ───────────────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
             className="w-full max-w-[420px] shrink-0"
           >
-            <div className="rounded-2xl bg-white dark:bg-gray-900 shadow-2xl overflow-hidden">
+            <div className="rounded-2xl bg-indigo-600 dark:bg-indigo-600/95 shadow-2xl shadow-indigo-300/30 dark:shadow-indigo-950/40 overflow-hidden">
 
               {/* Card header */}
-              <div className="px-8 pt-8 pb-6 border-b border-gray-100 dark:border-gray-800">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Đăng nhập</h1>
-                <p className="mt-0.5 text-sm text-gray-400 dark:text-gray-500">Đăng nhập vào Lumio</p>
+              <div className="px-8 pt-8 pb-6 border-b border-indigo-500/50">
+                <h1 className="text-xl font-bold text-white">Đăng nhập</h1>
+                <p className="mt-0.5 text-sm text-indigo-200">Đăng nhập vào Lumio</p>
               </div>
 
               {/* Card body */}
@@ -123,7 +122,7 @@ export default function LoginPage() {
                       initial={{ opacity: 0, height: 0, marginBottom: 0 }}
                       animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
                       exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                      className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2.5 text-sm text-red-700 dark:text-red-400 overflow-hidden"
+                      className="rounded-lg border border-red-300/40 bg-red-500/20 px-3 py-2.5 text-sm text-red-100 overflow-hidden"
                     >
                       {error}
                     </motion.div>
@@ -138,32 +137,32 @@ export default function LoginPage() {
                   >
                     {/* Email */}
                     <div className="space-y-1.5">
-                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</Label>
+                      <Label className="text-sm font-medium text-indigo-100">Email</Label>
                       <Input
                         type="email"
                         placeholder="you@lumio.app"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="h-11 rounded-lg border-gray-200 dark:border-gray-700 bg-[#F5F6FA] dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus-visible:ring-[#5B4EE8]"
+                        className="h-11 rounded-lg border-indigo-400/60 bg-indigo-500/40 text-white placeholder:text-indigo-300 focus-visible:ring-white/40 focus-visible:border-white/60"
                       />
                     </div>
 
                     {/* Password */}
                     <div className="space-y-1.5">
-                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Mật khẩu</Label>
+                      <Label className="text-sm font-medium text-indigo-100">Mật khẩu</Label>
                       <div className="relative">
                         <Input
                           type={showPw ? "text" : "password"}
                           placeholder="••••••••"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          className="h-11 rounded-lg border-gray-200 dark:border-gray-700 bg-[#F5F6FA] dark:bg-gray-800 pr-10 text-gray-900 dark:text-white placeholder:text-gray-400 focus-visible:ring-[#5B4EE8]"
+                          className="h-11 rounded-lg border-indigo-400/60 bg-indigo-500/40 text-white placeholder:text-indigo-300 pr-10 focus-visible:ring-white/40 focus-visible:border-white/60"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPw(!showPw)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-300 hover:text-white transition-colors"
                         >
                           {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
@@ -173,19 +172,19 @@ export default function LoginPage() {
 
                   {/* Remember + Forgot */}
                   <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+                    <label className="flex items-center gap-2 text-sm text-indigo-200 cursor-pointer select-none">
                       <div
                         onClick={() => setRemember(!remember)}
                         className={cn(
                           "flex h-4 w-4 items-center justify-center rounded border transition-colors",
-                          remember ? "border-[#5B4EE8] bg-[#5B4EE8]" : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                          remember ? "border-white bg-white" : "border-indigo-400/60 bg-indigo-500/30"
                         )}
                       >
-                        {remember && <Check className="h-2.5 w-2.5 text-white" />}
+                        {remember && <Check className="h-2.5 w-2.5 text-indigo-600" />}
                       </div>
                       Ghi nhớ đăng nhập
                     </label>
-                    <button type="button" className="text-sm font-medium hover:opacity-75 transition-opacity" style={{ color: BRAND }}>
+                    <button type="button" className="text-sm font-medium text-indigo-200 hover:text-white transition-colors">
                       Quên mật khẩu?
                     </button>
                   </div>
@@ -194,8 +193,7 @@ export default function LoginPage() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-11 rounded-lg font-semibold text-white text-sm"
-                    style={{ backgroundColor: BRAND }}
+                    className="w-full h-11 rounded-lg font-semibold bg-white text-indigo-600 hover:bg-indigo-50 text-sm shadow-sm"
                   >
                     {loading ? (
                       <span className="flex items-center gap-2">
@@ -206,11 +204,11 @@ export default function LoginPage() {
                   </Button>
 
                   {/* Demo accounts */}
-                  <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-[#F5F6FA] dark:bg-gray-800/60 overflow-hidden">
+                  <div className="rounded-xl border border-indigo-400/40 bg-indigo-500/30 overflow-hidden">
                     <button
                       type="button"
                       onClick={() => setDemoOpen(!demoOpen)}
-                      className="flex w-full items-center justify-between px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                      className="flex w-full items-center justify-between px-4 py-3 text-xs font-semibold text-indigo-200 hover:text-white hover:bg-indigo-600/50 transition-colors"
                     >
                       <span>🎭 Tài khoản demo</span>
                       {demoOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
@@ -222,9 +220,9 @@ export default function LoginPage() {
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.22 }}
-                          className="overflow-hidden border-t border-gray-200 dark:border-gray-700"
+                          className="overflow-hidden border-t border-indigo-500/50"
                         >
-                          <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                          <div className="divide-y divide-indigo-500/30">
                             {ALL_ROLES.map((role) => {
                               const u = MOCK_USERS[role];
                               return (
@@ -233,8 +231,8 @@ export default function LoginPage() {
                                     {u.avatar}
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{u.name}</p>
-                                    <p className="text-[10px] text-gray-400 truncate">{u.email}</p>
+                                    <p className="text-xs font-semibold text-white truncate">{u.name}</p>
+                                    <p className="text-[10px] text-indigo-300 truncate">{u.email}</p>
                                   </div>
                                   <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold", ROLE_COLORS[role])}>
                                     {ROLE_LABELS[role]}
@@ -244,7 +242,7 @@ export default function LoginPage() {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => fillDemo(role)}
-                                    className="h-6 shrink-0 border-gray-300 dark:border-gray-600 px-2 text-[10px] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    className="h-6 shrink-0 border-indigo-400/50 bg-indigo-600/50 px-2 text-[10px] text-white hover:bg-indigo-500/60"
                                   >
                                     Dùng
                                   </Button>
@@ -257,16 +255,16 @@ export default function LoginPage() {
                     </AnimatePresence>
                   </div>
 
-                  <p className="text-center text-[11px] text-gray-400 dark:text-gray-500">
+                  <p className="text-center text-[11px] text-indigo-300">
                     🚀 Chế độ demo — mọi mật khẩu đều hoạt động
                   </p>
                 </form>
               </div>
 
               {/* Card footer */}
-              <div className="border-t border-gray-100 dark:border-gray-800 px-8 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+              <div className="border-t border-indigo-500/50 px-8 py-4 text-center text-sm text-indigo-200">
                 Chưa có tài khoản?{" "}
-                <Link href="/register" className="font-semibold hover:opacity-75 transition-opacity" style={{ color: BRAND }}>
+                <Link href="/register" className="font-semibold text-white hover:opacity-80 transition-opacity">
                   Đăng ký ngay
                 </Link>
               </div>
