@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.API_BACKEND_URL ?? "http://localhost:3000";
+const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
+
+/** NestJS thường trả `message` là string hoặc mảng (class-validator). */
+function normalizeNestMessage(body: unknown): string | undefined {
+  const msg = (body as { message?: string | string[] })?.message;
+  if (Array.isArray(msg)) return msg.join(" ");
+  if (typeof msg === "string") return msg;
+  return undefined;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,10 +22,12 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
+      const message =
+        normalizeNestMessage(data) ?? "Không thể khởi tạo thanh toán";
+      return NextResponse.json({ ...data, message }, { status: response.status });
     }
 
     return NextResponse.json(data);

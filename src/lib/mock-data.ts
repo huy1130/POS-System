@@ -3,7 +3,6 @@ import type {
   InventoryItem,
   Order,
   Payment,
-  Subscription,
   Merchandise,
   User,
 } from "@/types";
@@ -15,38 +14,6 @@ export const mockUsers: User[] = [
   { id: "4", name: "Dave Cashier", email: "cashier@pos.com", role: "cashier", createdAt: "2024-01-04" },
 ];
 
-export const mockSubscriptions: Subscription[] = [
-  {
-    id: "1",
-    planName: "Starter",
-    price: 119000,
-    billingCycle: "monthly",
-    features: ["Up to 2 users", "100 products", "Basic reports", "Email support"],
-    maxUsers: 2,
-    maxProducts: 100,
-    status: "active",
-  },
-  {
-    id: "2",
-    planName: "Professional",
-    price: 159000,
-    billingCycle: "monthly",
-    features: ["Up to 10 users", "1,000 products", "Advanced analytics", "Priority support", "Multi-location"],
-    maxUsers: 10,
-    maxProducts: 1000,
-    status: "active",
-  },
-  {
-    id: "3",
-    planName: "Enterprise",
-    price: 299000,
-    billingCycle: "monthly",
-    features: ["Unlimited users", "Unlimited products", "Custom reports", "24/7 support", "API access", "White label"],
-    maxUsers: -1,
-    maxProducts: -1,
-    status: "active",
-  },
-];
 
 export const mockProducts: Product[] = [
   { id: "1", name: "Espresso Beans 1kg", sku: "BEAN-001", category: "Beverages", price: 24.99, cost: 12.5, stock: 50, minStock: 10, unit: "kg", status: "active", createdAt: "2024-01-10" },

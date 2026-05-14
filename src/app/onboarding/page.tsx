@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import Image from "next/image";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { ApiSubscription } from "@/types";
@@ -227,11 +228,21 @@ export default function OnboardingPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data?.message ?? "Đã có lỗi xảy ra, vui lòng thử lại.");
+        const m = data?.message;
+        setError(
+          Array.isArray(m) ? m.join(" ") : (m ?? "Đã có lỗi xảy ra, vui lòng thử lại.")
+        );
         return;
       }
 
       if (data?.checkoutUrl) {
+        if (data.orderCode) {
+          try {
+            sessionStorage.setItem("lumio_payos_order_code", String(data.orderCode));
+          } catch {
+            /* ignore */
+          }
+        }
         window.location.href = data.checkoutUrl;
       } else {
         setError("Không nhận được link thanh toán. Vui lòng thử lại.");

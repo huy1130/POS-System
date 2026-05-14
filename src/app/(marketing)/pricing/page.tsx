@@ -86,13 +86,12 @@ interface PricingPlan {
 }
 
 function fromApi(sub: ApiSubscription): PricingPlan {
-  const features = parseFeatures(sub.description);
   return {
     id:           String(sub.id),
     name:         formatPackageCode(sub.package_code),
     price:        parseFloat(sub.price),
     billingCycle: sub.billing_cycle,
-    features,
+    features:     parseFeatures(sub.description),
     description:  sub.description ?? "",
   };
 }
@@ -269,15 +268,9 @@ export default function PricingPage() {
             </motion.div>
           )}
 
-          {/* Source badge + trial note */}
-          {!loading && (
-            <div className="mt-10 flex flex-col items-center gap-2">
-              {isLive && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 px-3 py-1 text-xs text-green-700 dark:text-green-400 font-medium">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Dữ liệu thật từ hệ thống
-                </span>
-              )}
+          {/* Trial note */}
+          {!loading && plans.length > 0 && (
+            <div className="mt-10 flex justify-center">
               <p className="text-center text-sm text-gray-400 dark:text-gray-500">
                 Tất cả gói đều có 14 ngày dùng thử miễn phí · Không cần thẻ tín dụng · Hủy bất cứ lúc nào
               </p>
