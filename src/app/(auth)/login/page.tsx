@@ -17,6 +17,7 @@ import { MOCK_USERS, REDIRECT_MAP, ROLE_LABELS, ROLE_COLORS, ALL_ROLES } from "@
 import type { Role } from "@/config/roles";
 import { cn } from "@/lib/utils";
 import { adminService } from "@/services/adminService";
+import { toast } from "sonner";
 
 const BRAND = "#5B4EE8";
 
@@ -48,6 +49,9 @@ export default function LoginPage() {
       // ── Đăng nhập admin qua backend (CORS đã bật, gọi thẳng) ────────────────
       const res = await adminService.login(email, password);
       loginAdmin(res.accessToken, res.admin);
+      toast.success("Đăng nhập thành công", {
+        description: `Chào mừng trở lại, ${res.admin?.email ?? "Admin"}!`,
+      });
       router.push("/dashboard");
     } catch (apiErr: unknown) {
       const msg = apiErr instanceof Error ? apiErr.message : "";
