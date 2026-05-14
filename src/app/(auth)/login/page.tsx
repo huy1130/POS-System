@@ -70,7 +70,6 @@ export default function LoginPage() {
         className="absolute inset-0 h-full w-full object-cover"
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260331_074327_a4d6275d-82d9-4c83-bfbe-f1fb2213c17c.mp4"
       />
-      {/* Dark overlay for readability */}
       <div className="absolute inset-0 bg-black/55 backdrop-blur-[1px]" />
 
       {/* ── Page content ─────────────────────────────────────────────────── */}
@@ -108,7 +107,7 @@ export default function LoginPage() {
               </ul>
             </motion.div>
 
-            {/* ── RIGHT: Indigo card ───────────────────────────────────────── */}
+            {/* ── RIGHT: Login card ─────────────────────────────────────────── */}
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
