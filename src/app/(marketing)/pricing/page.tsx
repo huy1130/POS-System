@@ -10,6 +10,9 @@ import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { ApiSubscription } from "@/types";
 
+/** Trùng default với `src/lib/api.ts` — public `GET /subscriptions` không cần JWT. */
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:2999";
+
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   show:   { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" as const } },
@@ -31,8 +34,8 @@ const FAQS = [
     a: "Chúng tôi chấp nhận tất cả thẻ tín dụng/ghi nợ lớn, chuyển khoản ngân hàng và các ví điện tử phổ biến bao gồm MoMo và ZaloPay.",
   },
   {
-    q: "Chu kỳ thanh toán như thế nào?",
-    a: "Thanh toán theo tháng, tự động gia hạn. Bạn có thể hủy bất cứ lúc nào trước khi chu kỳ tiếp theo bắt đầu.",
+    q: "Có giảm giá khi thanh toán hàng năm không?",
+    a: "Nếu bạn chọn gói có chu kỳ thanh toán theo năm, mức giá hiển thị đã phản ánh theo gói đó. So sánh các gói trên bảng giá để chọn phương án phù hợp.",
   },
   {
     q: "Điều gì xảy ra khi hết thời gian dùng thử?",
@@ -63,7 +66,16 @@ function formatPackageCode(code: string): string {
     .join(" ");
 }
 
-// ─── Unified plan shape ───────────────────────────────────────────────────────
+/** Nhãn kỳ thanh toán bám theo `billing_cycle` từ API (vd. monthly → /tháng). */
+function pricePeriodSuffix(billingCycle: string): string {
+  const c = billingCycle.toLowerCase();
+  if (/(year|annual|yearly|năm)/.test(c)) return "/năm";
+  if (/(month|monthly|tháng)/.test(c)) return "/tháng";
+  if (/quarter/.test(c)) return "/quý";
+  return "";
+}
+
+// ─── Plan shape (API subscriptions) ─────────────────────────────────────────
 interface PricingPlan {
   id:           string;
   name:         string;
@@ -87,32 +99,31 @@ function fromApi(sub: ApiSubscription): PricingPlan {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [plans, setPlans]     = useState<PricingPlan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
+  const [openFaq, setOpenFaq]           = useState<number | null>(null);
+  const [plans, setPlans]               = useState<PricingPlan[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [isLive, setIsLive]             = useState(false);
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/public/subscriptions");
+        const res = await fetch(`${API_URL}/subscriptions`, {
+          headers: { Accept: "application/json" },
+        });
         if (res.ok) {
-          const raw: unknown = await res.json();
-          const data: ApiSubscription[] = Array.isArray(raw)
-            ? raw
-            : raw &&
-                typeof raw === "object" &&
-                Array.isArray((raw as { data?: ApiSubscription[] }).data)
-              ? (raw as { data: ApiSubscription[] }).data
-              : [];
-          // Chỉ ẩn gói đã tắt rõ ràng; thiếu field is_active vẫn hiển thị (tương thích API cũ)
-          setPlans(data.filter((s) => s.is_active !== false).map(fromApi));
+          const data: ApiSubscription[] = await res.json();
+          const active = data
+            .filter((s) => s.is_active)
+            .sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+          setPlans(active.map(fromApi));
+          setIsLive(true);
           return;
         }
       } catch {
-        // network error
+        // mạng / CORS / backend tắt
       }
-      setFetchError(true);
+      setPlans([]);
+      setIsLive(false);
     }
     load().finally(() => setLoading(false));
   }, []);
@@ -147,22 +158,22 @@ export default function PricingPage() {
       <section className="py-28 bg-white dark:bg-gray-950">
         <div className="mx-auto max-w-7xl px-6">
 
-
           {/* Cards */}
           {loading ? (
             <div className="flex items-center justify-center py-24 text-gray-400">
               <Loader2 className="mr-2 h-6 w-6 animate-spin" />
               Đang tải gói dịch vụ…
             </div>
-          ) : fetchError ? (
-            <div className="flex flex-col items-center justify-center py-24 gap-3 text-gray-400">
-              <p className="text-base font-medium">Không thể tải dữ liệu gói dịch vụ.</p>
-              <p className="text-sm">Vui lòng thử lại sau hoặc liên hệ hỗ trợ.</p>
-            </div>
           ) : plans.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 gap-3 text-gray-400">
-              <p className="text-base font-medium">Chưa có gói dịch vụ nào.</p>
-              <p className="text-sm">Admin chưa thiết lập gói — vui lòng quay lại sau.</p>
+            <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-900/40 px-8 py-16 text-center">
+              <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Chưa có gói dịch vụ hiển thị
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                {isLive
+                  ? "Hiện không có gói đang hoạt động. Vui lòng quay lại sau hoặc liên hệ đội ngũ hỗ trợ."
+                  : "Không tải được danh sách gói. Kiểm tra kết nối hoặc cấu hình máy chủ, rồi tải lại trang."}
+              </p>
             </div>
           ) : (
             <motion.div
@@ -179,6 +190,7 @@ export default function PricingPage() {
             >
               {plans.map((plan, i) => {
                 const isPopular = i === Math.floor(plans.length / 2) && plans.length > 1;
+                const periodSuffix = pricePeriodSuffix(plan.billingCycle);
 
                 return (
                   <motion.div
@@ -208,15 +220,20 @@ export default function PricingPage() {
                         <span className={cn("text-4xl font-extrabold", isPopular ? "text-white" : "text-gray-900 dark:text-white")}>
                           {formatCurrency(plan.price)}
                         </span>
-                        <span className={cn("text-sm", isPopular ? "text-indigo-200" : "text-gray-400 dark:text-gray-500")}>
-                          /{plan.billingCycle}
-                        </span>
+                        {periodSuffix && (
+                          <span className={cn("text-sm", isPopular ? "text-indigo-200" : "text-gray-400 dark:text-gray-500")}>
+                            {periodSuffix}
+                          </span>
+                        )}
                       </div>
                       {plan.description && plan.features.length === 0 && (
                         <p className={cn("text-xs mt-1", isPopular ? "text-indigo-200" : "text-gray-400 dark:text-gray-500")}>
                           {plan.description}
                         </p>
                       )}
+                      <p className={cn("text-xs mt-1 capitalize", isPopular ? "text-indigo-200" : "text-gray-400 dark:text-gray-500")}>
+                        Chu kỳ thanh toán: {plan.billingCycle}
+                      </p>
                     </div>
 
                     {/* Features */}
