@@ -28,6 +28,16 @@ import type { ApiSubscription } from "@/types";
 
 const BRAND = "#5B4EE8";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:2999";
+
+function pricePeriodSuffix(billingCycle: string): string {
+  const c = billingCycle.toLowerCase();
+  if (/(year|annual|yearly|năm)/.test(c)) return "/năm";
+  if (/(month|monthly|tháng)/.test(c)) return "/tháng";
+  if (/quarter/.test(c)) return "/quý";
+  return "";
+}
+
 // ─── Plan shape ────────────────────────────────────────────────────────────────
 interface Plan {
   id: number;
@@ -109,11 +119,9 @@ export default function OnboardingPage() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const planId   = params.get("plan")  ?? "";
-  const cycle    = params.get("cycle") ?? "monthly";
-  const isAnnual = cycle === "annual";
+  const planId = params.get("plan") ?? "";
 
-  // ── Fetch plan từ API ─────────────────────────────────────────────────────
+  // ── Fetch plan từ backend (public GET /subscriptions, giống trang pricing) ──
   const [plan, setPlan]           = useState<Plan | null>(null);
   const [planLoading, setPlanLoading] = useState(true);
   const [planError, setPlanError] = useState(false);
@@ -124,37 +132,52 @@ export default function OnboardingPage() {
       setPlanError(true);
       return;
     }
-    fetch("/api/public/subscriptions")
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((list: ApiSubscription[]) => {
-        const found = list.find((s) => String(s.id) === planId);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}/subscriptions`, {
+          headers: { Accept: "application/json" },
+        });
+        if (!res.ok) throw new Error("fetch failed");
+        const list: ApiSubscription[] = await res.json();
+        const found = list
+          .filter((s) => s.is_active)
+          .find((s) => String(s.id) === planId);
+        if (cancelled) return;
         if (found) {
           setPlan({
-            id:          found.id,
-            name:        formatCode(found.package_code),
-            price:       parseFloat(found.price),
+            id:           found.id,
+            name:         formatCode(found.package_code),
+            price:        parseFloat(found.price),
             billingCycle: found.billing_cycle,
-            packageCode: found.package_code,
-            features:    parseFeatures(found.description),
+            packageCode:  found.package_code,
+            features:     parseFeatures(found.description),
           });
+          setPlanError(false);
         } else {
+          setPlan(null);
           setPlanError(true);
         }
-      })
-      .catch(() => setPlanError(true))
-      .finally(() => setPlanLoading(false));
+      } catch {
+        if (!cancelled) {
+          setPlan(null);
+          setPlanError(true);
+        }
+      } finally {
+        if (!cancelled) setPlanLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [planId]);
-
-  const displayPrice = plan
-    ? isAnnual ? Math.round(plan.price * 0.8) : plan.price
-    : 0;
 
   // ── Form state ─────────────────────────────────────────────────────────────
   const [step, setStep]     = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError]   = useState<string | null>(null);
 
-  // Các trường gửi lên POST /checkout/initiate
+  // Các trường gửi lên POST /api/checkout/initiate (proxy → Nest subscriptions/purchase/initiate)
   const [tenantName, setTenantName] = useState("");
   const [username,   setUsername]   = useState("");
   const [email,      setEmail]      = useState("");
@@ -280,26 +303,18 @@ export default function OnboardingPage() {
                 <>
                   <div className="flex items-baseline gap-1 mb-0.5">
                     <span className="text-2xl font-extrabold text-white">
-                      {formatCurrency(displayPrice)}
+                      {formatCurrency(plan.price)}
                     </span>
-                    <span className="text-sm text-white/60">/tháng</span>
+                    {pricePeriodSuffix(plan.billingCycle) && (
+                      <span className="text-sm text-white/60">
+                        {pricePeriodSuffix(plan.billingCycle)}
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm font-semibold text-white mb-0.5">{plan.name}</p>
-                  <p className="text-xs text-white/50 mb-3">
-                    {isAnnual
-                      ? `Thanh toán hàng năm · Tiết kiệm 20% · ${plan.billingCycle}`
-                      : `Thanh toán hàng tháng · ${plan.billingCycle}`}
+                  <p className="text-xs text-white/50 mb-3 capitalize">
+                    Chu kỳ: {plan.billingCycle}
                   </p>
-                  {isAnnual && (
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <span className="text-xs bg-green-400/20 text-green-300 rounded-full px-2.5 py-0.5 font-medium">
-                        Tiết kiệm 20%
-                      </span>
-                      <span className="text-xs text-white/50 line-through">
-                        {formatCurrency(plan.price)}/tháng
-                      </span>
-                    </div>
-                  )}
                   {plan.features.length > 0 && (
                     <ul className="space-y-2">
                       {plan.features.map((f) => (
@@ -533,28 +548,21 @@ export default function OnboardingPage() {
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <p className="font-bold text-gray-900 dark:text-white">{plan.name}</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                {isAnnual
-                                  ? `Thanh toán hàng năm · Tiết kiệm 20%`
-                                  : `Thanh toán hàng tháng`}
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 capitalize">
+                                Chu kỳ thanh toán: {plan.billingCycle}
                               </p>
-                              <p className="text-xs text-gray-400 mt-0.5">{plan.billingCycle}</p>
                             </div>
                             <div className="text-right shrink-0">
                               <p className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">
-                                {formatCurrency(displayPrice)}
+                                {formatCurrency(plan.price)}
                               </p>
-                              <p className="text-xs text-gray-400">/tháng</p>
+                              {pricePeriodSuffix(plan.billingCycle) && (
+                                <p className="text-xs text-gray-400">
+                                  {pricePeriodSuffix(plan.billingCycle)}
+                                </p>
+                              )}
                             </div>
                           </div>
-                          {isAnnual && (
-                            <div className="mt-3 pt-3 border-t border-indigo-200 dark:border-indigo-800/50 flex justify-between text-sm">
-                              <span className="text-gray-500">Tổng thanh toán hôm nay</span>
-                              <span className="font-bold text-gray-900 dark:text-white">
-                                {formatCurrency(displayPrice * 12)}
-                              </span>
-                            </div>
-                          )}
                         </div>
                       )}
 

@@ -1,19 +1,20 @@
+import { AUTH_TOKEN_KEY } from "@/lib/api-client";
+
 // CORS đã được bật ở backend → browser gọi thẳng, không cần proxy
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:2999";
 
-const TOKEN_KEY = "lumio_admin_token";
-
+/** Cùng key với AuthContext / axios api-client — trước đây dùng lumio_admin_token nên CRUD không gửi JWT. */
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
+  return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
 export function setToken(token: string): void {
-  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
 }
 
 export function clearToken(): void {
-  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(AUTH_TOKEN_KEY);
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
