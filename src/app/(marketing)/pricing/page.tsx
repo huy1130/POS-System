@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight, HelpCircle, Loader2 } from "lucide-react";
-import { mockSubscriptions } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { ApiSubscription } from "@/types";
@@ -32,8 +31,8 @@ const FAQS = [
     a: "Chúng tôi chấp nhận tất cả thẻ tín dụng/ghi nợ lớn, chuyển khoản ngân hàng và các ví điện tử phổ biến bao gồm MoMo và ZaloPay.",
   },
   {
-    q: "Có giảm giá khi thanh toán hàng năm không?",
-    a: "Có, gói hàng năm giúp bạn tiết kiệm đến 20% so với thanh toán hàng tháng. Chuyển đổi chu kỳ thanh toán ở phía trên để so sánh.",
+    q: "Chu kỳ thanh toán như thế nào?",
+    a: "Thanh toán theo tháng, tự động gia hạn. Bạn có thể hủy bất cứ lúc nào trước khi chu kỳ tiếp theo bắt đầu.",
   },
   {
     q: "Điều gì xảy ra khi hết thời gian dùng thử?",
@@ -64,7 +63,7 @@ function formatPackageCode(code: string): string {
     .join(" ");
 }
 
-// ─── Unified plan shape (works for both mock & real data) ────────────────────
+// ─── Unified plan shape ───────────────────────────────────────────────────────
 interface PricingPlan {
   id:           string;
   name:         string;
@@ -75,66 +74,45 @@ interface PricingPlan {
 }
 
 function fromApi(sub: ApiSubscription): PricingPlan {
-  const features = parseFeatures(sub.description);
   return {
     id:           String(sub.id),
     name:         formatPackageCode(sub.package_code),
     price:        parseFloat(sub.price),
     billingCycle: sub.billing_cycle,
-    features,
+    features:     parseFeatures(sub.description),
     description:  sub.description ?? "",
-  };
-}
-
-function fromMock(m: typeof mockSubscriptions[0]): PricingPlan {
-  return {
-    id:           m.id,
-    name:         m.planName,
-    price:        m.price,
-    billingCycle: m.billingCycle,
-    features:     m.features,
-    description:  `Tối đa ${m.maxUsers === -1 ? "không giới hạn" : m.maxUsers} người dùng · ${m.maxProducts === -1 ? "không giới hạn" : m.maxProducts} sản phẩm`,
   };
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
-  const [openFaq, setOpenFaq]           = useState<number | null>(null);
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
-  const [plans, setPlans]               = useState<PricingPlan[]>([]);
-  const [loading, setLoading]           = useState(true);
-  const [isLive, setIsLive]             = useState(false);
-
-  const isAnnual = billingCycle === "annual";
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [plans, setPlans]     = useState<PricingPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     async function load() {
       try {
-        // Forward token nếu user đang login (admin) → route dùng luôn không cần service credentials
-        const token = typeof window !== "undefined"
-          ? localStorage.getItem("lumio_admin_token")
-          : null;
-
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        const res = await fetch("/api/public/subscriptions", { headers });
+        const res = await fetch("/api/public/subscriptions");
         if (res.ok) {
-          const data: ApiSubscription[] = await res.json();
-          if (data.length > 0) {
-            setPlans(data.map(fromApi));
-            setIsLive(true);
-            return;
-          }
+          const raw: unknown = await res.json();
+          const data: ApiSubscription[] = Array.isArray(raw)
+            ? raw
+            : raw &&
+                typeof raw === "object" &&
+                Array.isArray((raw as { data?: ApiSubscription[] }).data)
+              ? (raw as { data: ApiSubscription[] }).data
+              : [];
+          // Chỉ ẩn gói đã tắt rõ ràng; thiếu field is_active vẫn hiển thị (tương thích API cũ)
+          setPlans(data.filter((s) => s.is_active !== false).map(fromApi));
+          return;
         }
       } catch {
-        // silently fall through to mock
+        // network error
       }
-      // fallback: mock data
-      setPlans(mockSubscriptions.map(fromMock));
-      setIsLive(false);
+      setFetchError(true);
     }
     load().finally(() => setLoading(false));
   }, []);
@@ -169,53 +147,22 @@ export default function PricingPage() {
       <section className="py-28 bg-white dark:bg-gray-950">
         <div className="mx-auto max-w-7xl px-6">
 
-          {/* Billing toggle */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.45 }}
-            className="flex flex-col items-center gap-3 mb-14"
-          >
-            <div className="flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-800 p-1">
-              <button
-                onClick={() => setBillingCycle("monthly")}
-                className={cn(
-                  "px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200",
-                  !isAnnual
-                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                )}
-              >
-                Hàng tháng
-              </button>
-              <button
-                onClick={() => setBillingCycle("annual")}
-                className={cn(
-                  "px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-2",
-                  isAnnual
-                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                )}
-              >
-                Hàng năm
-                <span className="rounded-full bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 text-xs font-bold px-2 py-0.5">
-                  Tiết kiệm 20%
-                </span>
-              </button>
-            </div>
-            {isAnnual && (
-              <p className="text-sm text-gray-400 dark:text-gray-500">
-                Thanh toán một lần mỗi năm · giá hiển thị theo tháng
-              </p>
-            )}
-          </motion.div>
 
           {/* Cards */}
           {loading ? (
             <div className="flex items-center justify-center py-24 text-gray-400">
               <Loader2 className="mr-2 h-6 w-6 animate-spin" />
               Đang tải gói dịch vụ…
+            </div>
+          ) : fetchError ? (
+            <div className="flex flex-col items-center justify-center py-24 gap-3 text-gray-400">
+              <p className="text-base font-medium">Không thể tải dữ liệu gói dịch vụ.</p>
+              <p className="text-sm">Vui lòng thử lại sau hoặc liên hệ hỗ trợ.</p>
+            </div>
+          ) : plans.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 gap-3 text-gray-400">
+              <p className="text-base font-medium">Chưa có gói dịch vụ nào.</p>
+              <p className="text-sm">Admin chưa thiết lập gói — vui lòng quay lại sau.</p>
             </div>
           ) : (
             <motion.div
@@ -231,8 +178,7 @@ export default function PricingPage() {
               )}
             >
               {plans.map((plan, i) => {
-                const isPopular     = i === Math.floor(plans.length / 2) && plans.length > 1;
-                const displayPrice  = isAnnual ? Math.round(plan.price * 0.8) : plan.price;
+                const isPopular = i === Math.floor(plans.length / 2) && plans.length > 1;
 
                 return (
                   <motion.div
@@ -260,26 +206,17 @@ export default function PricingPage() {
                       </p>
                       <div className="flex items-baseline gap-1 mb-1">
                         <span className={cn("text-4xl font-extrabold", isPopular ? "text-white" : "text-gray-900 dark:text-white")}>
-                          {formatCurrency(displayPrice)}
+                          {formatCurrency(plan.price)}
                         </span>
                         <span className={cn("text-sm", isPopular ? "text-indigo-200" : "text-gray-400 dark:text-gray-500")}>
-                          /tháng
+                          /{plan.billingCycle}
                         </span>
                       </div>
-                      {isAnnual && (
-                        <p className={cn("text-xs mb-1 line-through", isPopular ? "text-indigo-300" : "text-gray-400 dark:text-gray-500")}>
-                          {formatCurrency(plan.price)}/tháng
-                        </p>
-                      )}
                       {plan.description && plan.features.length === 0 && (
                         <p className={cn("text-xs mt-1", isPopular ? "text-indigo-200" : "text-gray-400 dark:text-gray-500")}>
                           {plan.description}
                         </p>
                       )}
-                      <p className={cn("text-xs mt-1 capitalize", isPopular ? "text-indigo-200" : "text-gray-400 dark:text-gray-500")}>
-                        Chu kỳ: {plan.billingCycle}
-                        {isAnnual && ` · ${formatCurrency(displayPrice * 12)}/năm`}
-                      </p>
                     </div>
 
                     {/* Features */}
@@ -295,7 +232,7 @@ export default function PricingPage() {
                     )}
 
                     <div className={plan.features.length === 0 ? "mt-auto" : ""}>
-                      <Link href={`/onboarding?plan=${plan.id}&cycle=${billingCycle}`}>
+                      <Link href={`/onboarding?plan=${plan.id}`}>
                         <Button
                           className={cn(
                             "w-full font-semibold h-11 rounded-xl",
@@ -314,15 +251,9 @@ export default function PricingPage() {
             </motion.div>
           )}
 
-          {/* Source badge + trial note */}
-          {!loading && (
-            <div className="mt-10 flex flex-col items-center gap-2">
-              {isLive && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 px-3 py-1 text-xs text-green-700 dark:text-green-400 font-medium">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Dữ liệu thật từ hệ thống
-                </span>
-              )}
+          {/* Trial note */}
+          {!loading && plans.length > 0 && (
+            <div className="mt-10 flex justify-center">
               <p className="text-center text-sm text-gray-400 dark:text-gray-500">
                 Tất cả gói đều có 14 ngày dùng thử miễn phí · Không cần thẻ tín dụng · Hủy bất cứ lúc nào
               </p>

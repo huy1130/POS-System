@@ -1,5 +1,6 @@
 // CORS đã được bật ở backend → browser gọi thẳng, không cần proxy
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:2999";
+/** Trùng cổng mặc định của Nest (`PORT ?? 3000`) và BFF `API_BACKEND_URL`. */
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 const TOKEN_KEY = "lumio_admin_token";
 

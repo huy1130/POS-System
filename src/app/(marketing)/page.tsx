@@ -1,18 +1,19 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   ArrowRight, Check, BarChart3, Shield, Zap,
   ShoppingCart, Package, Users, TrendingUp,
-  Layers,
+  Layers, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { mockSubscriptions } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import type { ApiSubscription } from "@/types";
 
 // ─── Animation variants ───────────────────────────────────────────────────────
 const fadeUp = {
@@ -69,7 +70,36 @@ const FEATURES = [
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+function parseFeatures(description: string | null): string[] {
+  if (!description) return [];
+  return description.split(/[,\n]/).map((f) => f.trim()).filter(Boolean);
+}
+
+function formatPackageCode(code: string): string {
+  return code.split(/[_-]/).map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+}
+
 export default function LandingPage() {
+  const [plans, setPlans]     = useState<ApiSubscription[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/public/subscriptions")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((raw: unknown) => {
+        const data: ApiSubscription[] = Array.isArray(raw)
+          ? raw
+          : raw &&
+              typeof raw === "object" &&
+              Array.isArray((raw as { data?: ApiSubscription[] }).data)
+            ? (raw as { data: ApiSubscription[] }).data
+            : [];
+        setPlans(data.filter((s) => s.is_active !== false));
+      })
+      .catch(() => setPlans([]))
+      .finally(() => setPlansLoading(false));
+  }, []);
+
   return (
     <>
       {/* ══ HERO ════════════════════════════════════════════════════════════ */}
@@ -277,66 +307,88 @@ export default function LandingPage() {
             </motion.p>
           </motion.div>
 
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger} className="grid gap-6 md:grid-cols-3">
-            {mockSubscriptions.map((plan, i) => {
-              const isPopular = i === 1;
-              return (
-                <motion.div
-                  key={plan.id}
-                  variants={fadeUp}
-                  className={cn(
-                    "relative flex flex-col rounded-2xl border p-7",
-                    isPopular
-                      ? "border-indigo-300 bg-indigo-600 text-white ring-4 ring-indigo-100 dark:ring-indigo-900 scale-[1.03] shadow-xl shadow-indigo-200 dark:shadow-indigo-900/50"
-                      : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all"
-                  )}
-                >
-                  {isPopular && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                      <span className="rounded-full bg-white text-indigo-600 px-4 py-1 text-xs font-bold shadow-sm border border-indigo-100">
-                        Most Popular
-                      </span>
+          {plansLoading ? (
+            <div className="flex items-center justify-center py-16 text-gray-400">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Đang tải gói dịch vụ…
+            </div>
+          ) : plans.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-2 text-gray-400">
+              <p className="text-sm font-medium">Chưa có gói dịch vụ nào.</p>
+              <Link href="/pricing" className="text-sm text-indigo-600 hover:underline">Xem trang giá →</Link>
+            </div>
+          ) : (
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
+              className={cn(
+                "grid gap-6",
+                plans.length === 1 && "max-w-sm mx-auto",
+                plans.length === 2 && "md:grid-cols-2 max-w-3xl mx-auto",
+                plans.length >= 3 && "md:grid-cols-3",
+              )}
+            >
+              {plans.map((plan, i) => {
+                const isPopular = i === Math.floor(plans.length / 2) && plans.length > 1;
+                const features  = parseFeatures(plan.description);
+                return (
+                  <motion.div
+                    key={plan.id}
+                    variants={fadeUp}
+                    className={cn(
+                      "relative flex flex-col rounded-2xl border p-7",
+                      isPopular
+                        ? "border-indigo-300 bg-indigo-600 text-white ring-4 ring-indigo-100 dark:ring-indigo-900 scale-[1.03] shadow-xl shadow-indigo-200 dark:shadow-indigo-900/50"
+                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all"
+                    )}
+                  >
+                    {isPopular && (
+                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                        <span className="rounded-full bg-white text-indigo-600 px-4 py-1 text-xs font-bold shadow-sm border border-indigo-100">
+                          Phổ biến nhất
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="mb-5">
+                      <p className={cn("text-base font-semibold mb-2", isPopular ? "text-indigo-100" : "text-gray-900 dark:text-white")}>
+                        {formatPackageCode(plan.package_code)}
+                      </p>
+                      <div className="flex items-baseline gap-1">
+                        <span className={cn("text-4xl font-extrabold", isPopular ? "text-white" : "text-gray-900 dark:text-white")}>
+                          {formatCurrency(parseFloat(plan.price))}
+                        </span>
+                        <span className={cn("text-sm", isPopular ? "text-indigo-200" : "text-gray-400 dark:text-gray-500")}>
+                          /{plan.billing_cycle}
+                        </span>
+                      </div>
                     </div>
-                  )}
 
-                  <div className="mb-5">
-                    <p className={cn("text-base font-semibold mb-2", isPopular ? "text-indigo-100" : "text-gray-900 dark:text-white")}>{plan.planName}</p>
-                    <div className="flex items-baseline gap-1">
-                      <span className={cn("text-4xl font-extrabold", isPopular ? "text-white" : "text-gray-900 dark:text-white")}>{formatCurrency(plan.price)}</span>
-                      <span className={cn("text-sm", isPopular ? "text-indigo-200" : "text-gray-400 dark:text-gray-500")}>/{plan.billingCycle}</span>
-                    </div>
-                    <p className={cn("text-xs mt-2", isPopular ? "text-indigo-200" : "text-gray-400 dark:text-gray-500")}>
-                      {plan.maxUsers === -1 ? "Unlimited users" : `Up to ${plan.maxUsers} users`}
-                      {" · "}
-                      {plan.maxProducts === -1 ? "Unlimited products" : `${plan.maxProducts.toLocaleString()} products`}
-                    </p>
-                  </div>
+                    {features.length > 0 && (
+                      <ul className="flex-1 space-y-2.5 mb-7">
+                        {features.map((f) => (
+                          <li key={f} className={cn("flex items-start gap-2.5 text-sm", isPopular ? "text-indigo-100" : "text-gray-600 dark:text-gray-300")}>
+                            <Check className={cn("h-4 w-4 shrink-0 mt-0.5", isPopular ? "text-indigo-200" : "text-green-500")} />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
 
-                  <ul className="flex-1 space-y-2.5 mb-7">
-                    {plan.features.map((f) => (
-                      <li key={f} className={cn("flex items-start gap-2.5 text-sm", isPopular ? "text-indigo-100" : "text-gray-600 dark:text-gray-300")}>
-                        <Check className={cn("h-4 w-4 shrink-0 mt-0.5", isPopular ? "text-indigo-200" : "text-green-500")} />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Link href="/register">
-                    <Button
-                      className={cn(
-                        "w-full font-semibold",
-                        isPopular
-                          ? "bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm"
-                          : "bg-indigo-600 hover:bg-indigo-500 text-white"
-                      )}
-                    >
-                      Bắt đầu
-                    </Button>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+                    <Link href={`/onboarding?plan=${plan.id}&cycle=monthly`}>
+                      <Button
+                        className={cn(
+                          "w-full font-semibold mt-auto",
+                          isPopular
+                            ? "bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm"
+                            : "bg-indigo-600 hover:bg-indigo-500 text-white"
+                        )}
+                      >
+                        Bắt đầu
+                      </Button>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
         </div>
       </section>
 

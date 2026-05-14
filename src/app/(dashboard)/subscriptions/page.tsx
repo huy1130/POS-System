@@ -18,11 +18,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AccessGuard } from "@/components/shared/AccessGuard";
 import { subscriptionService } from "@/services/subscriptionService";
 import { formatCurrency } from "@/lib/utils";
 import type { ApiSubscription, CreateSubscriptionPayload } from "@/types";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -41,28 +41,26 @@ const EMPTY_FORM: CreateSubscriptionPayload = {
 // ─── page shell ───────────────────────────────────────────────────────────────
 
 export default function SubscriptionsPage() {
-  return (
-    <AccessGuard roles={["admin"]}>
-      <SubscriptionsContent />
-    </AccessGuard>
-  );
+  return <SubscriptionsContent />;
 }
 
 // ─── main content ─────────────────────────────────────────────────────────────
 
 function SubscriptionsContent() {
+  const { isRealAdmin } = useAuth();
+
   const [subscriptions, setSubscriptions] = useState<ApiSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // modal state
+  // modal state (admin only)
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ApiSubscription | null>(null);
   const [form, setForm] = useState<CreateSubscriptionPayload>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // toggling activate/deactivate
+  // toggling activate/deactivate (admin only)
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
   // ── fetch ──────────────────────────────────────────────────────────────────
@@ -71,8 +69,22 @@ function SubscriptionsContent() {
     setLoading(true);
     setError(null);
     try {
-      const data = await subscriptionService.getAll();
-      setSubscriptions(data);
+      if (isRealAdmin) {
+        const data = await subscriptionService.getAll();
+        setSubscriptions(data);
+      } else {
+        const res = await fetch("/api/public/subscriptions");
+        if (!res.ok) throw new Error("Failed to load subscriptions");
+        const raw: unknown = await res.json();
+        const data: ApiSubscription[] = Array.isArray(raw)
+          ? raw
+          : raw &&
+              typeof raw === "object" &&
+              Array.isArray((raw as { data?: ApiSubscription[] }).data)
+            ? (raw as { data: ApiSubscription[] }).data
+            : [];
+        setSubscriptions(data);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load subscriptions");
     } finally {
@@ -80,7 +92,7 @@ function SubscriptionsContent() {
     }
   }
 
-  useEffect(() => { fetchSubscriptions(); }, []);
+  useEffect(() => { fetchSubscriptions(); }, [isRealAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── modal helpers ──────────────────────────────────────────────────────────
 
@@ -224,9 +236,11 @@ function SubscriptionsContent() {
                 {loading ? "Loading…" : `${subscriptions.length} plans`}
               </CardDescription>
             </div>
-            <Button className="gap-2" onClick={openCreate} disabled={loading}>
-              <Plus className="h-4 w-4" /> New Plan
-            </Button>
+            {isRealAdmin && (
+              <Button className="gap-2" onClick={openCreate} disabled={loading}>
+                <Plus className="h-4 w-4" /> New Plan
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -244,17 +258,17 @@ function SubscriptionsContent() {
                     <TableHead>Billing Cycle</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    {isRealAdmin && <TableHead className="text-right">Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {subscriptions.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={7}
+                        colSpan={isRealAdmin ? 7 : 6}
                         className="py-12 text-center text-muted-foreground"
                       >
-                        No subscription plans yet. Create your first plan.
+                        {isRealAdmin ? "No subscription plans yet. Create your first plan." : "Chưa có gói dịch vụ nào."}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -280,47 +294,49 @@ function SubscriptionsContent() {
                         <TableCell className="text-muted-foreground text-sm">
                           {new Date(sub.created_at).toLocaleDateString("vi-VN")}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end items-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                              title="Edit"
-                              onClick={() => openEdit(sub)}
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
+                        {isRealAdmin && (
+                          <TableCell className="text-right">
+                            <div className="flex justify-end items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                                title="Edit"
+                                onClick={() => openEdit(sub)}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
 
-                            {/* Toggle active pill button */}
-                            <button
-                              title={sub.is_active ? "Nhấn để vô hiệu hóa" : "Nhấn để kích hoạt"}
-                              onClick={() => handleToggle(sub)}
-                              disabled={togglingId === sub.id}
-                              className={`
-                                relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center
-                                rounded-full border-2 border-transparent transition-colors duration-200
-                                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
-                                disabled:cursor-not-allowed disabled:opacity-50
-                                ${sub.is_active
-                                  ? "bg-green-500 hover:bg-green-600"
-                                  : "bg-input hover:bg-muted-foreground/30"}
-                              `}
-                            >
-                              <span
+                              {/* Toggle active pill button */}
+                              <button
+                                title={sub.is_active ? "Nhấn để vô hiệu hóa" : "Nhấn để kích hoạt"}
+                                onClick={() => handleToggle(sub)}
+                                disabled={togglingId === sub.id}
                                 className={`
-                                  pointer-events-none inline-flex h-4 w-4 items-center justify-center
-                                  rounded-full bg-white shadow-md ring-0 transition-transform duration-200
-                                  ${sub.is_active ? "translate-x-5" : "translate-x-0"}
+                                  relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center
+                                  rounded-full border-2 border-transparent transition-colors duration-200
+                                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                                  disabled:cursor-not-allowed disabled:opacity-50
+                                  ${sub.is_active
+                                    ? "bg-green-500 hover:bg-green-600"
+                                    : "bg-input hover:bg-muted-foreground/30"}
                                 `}
                               >
-                                {togglingId === sub.id && (
-                                  <Loader2 className="h-2.5 w-2.5 animate-spin text-gray-400" />
-                                )}
-                              </span>
-                            </button>
-                          </div>
-                        </TableCell>
+                                <span
+                                  className={`
+                                    pointer-events-none inline-flex h-4 w-4 items-center justify-center
+                                    rounded-full bg-white shadow-md ring-0 transition-transform duration-200
+                                    ${sub.is_active ? "translate-x-5" : "translate-x-0"}
+                                  `}
+                                >
+                                  {togglingId === sub.id && (
+                                    <Loader2 className="h-2.5 w-2.5 animate-spin text-gray-400" />
+                                  )}
+                                </span>
+                              </button>
+                            </div>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))
                   )}
