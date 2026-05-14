@@ -7,7 +7,6 @@ import {
   Check,
   CreditCard,
   Loader2,
-  Coffee,
   Store,
   ArrowLeft,
   Mail,
@@ -22,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import Image from "next/image";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { ApiSubscription } from "@/types";
@@ -109,9 +109,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const planId   = params.get("plan")  ?? "";
-  const cycle    = params.get("cycle") ?? "monthly";
-  const isAnnual = cycle === "annual";
+  const planId = params.get("plan") ?? "";
 
   // ── Fetch plan từ API ─────────────────────────────────────────────────────
   const [plan, setPlan]           = useState<Plan | null>(null);
@@ -125,7 +123,7 @@ export default function OnboardingPage() {
       return;
     }
     fetch("/api/public/subscriptions")
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((r) => (r.ok ? r.json() : Promise.reject("fetch failed")))
       .then((list: ApiSubscription[]) => {
         const found = list.find((s) => String(s.id) === planId);
         if (found) {
@@ -145,16 +143,14 @@ export default function OnboardingPage() {
       .finally(() => setPlanLoading(false));
   }, [planId]);
 
-  const displayPrice = plan
-    ? isAnnual ? Math.round(plan.price * 0.8) : plan.price
-    : 0;
+  const displayPrice = plan?.price ?? 0;
 
   // ── Form state ─────────────────────────────────────────────────────────────
   const [step, setStep]     = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError]   = useState<string | null>(null);
 
-  // Các trường gửi lên POST /checkout/initiate
+  // Gửi qua BFF POST /api/checkout/initiate → backend POST /subscriptions/purchase/initiate
   const [tenantName, setTenantName] = useState("");
   const [username,   setUsername]   = useState("");
   const [email,      setEmail]      = useState("");
@@ -204,11 +200,21 @@ export default function OnboardingPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data?.message ?? "Đã có lỗi xảy ra, vui lòng thử lại.");
+        const m = data?.message;
+        setError(
+          Array.isArray(m) ? m.join(" ") : (m ?? "Đã có lỗi xảy ra, vui lòng thử lại.")
+        );
         return;
       }
 
       if (data?.checkoutUrl) {
+        if (data.orderCode) {
+          try {
+            sessionStorage.setItem("lumio_payos_order_code", String(data.orderCode));
+          } catch {
+            /* ignore */
+          }
+        }
         window.location.href = data.checkoutUrl;
       } else {
         setError("Không nhận được link thanh toán. Vui lòng thử lại.");
@@ -226,10 +232,15 @@ export default function OnboardingPage() {
 
       {/* Top bar */}
       <div className="flex items-center gap-2.5 px-8 py-5 shrink-0">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
-          <Coffee className="h-4 w-4 text-white" />
-        </div>
-        <span className="text-white font-bold text-base tracking-tight">Lumio</span>
+        <Image
+          src="/images/lumio-icon.png"
+          alt="Lumio Logo"
+          width={36}
+          height={36}
+          className="h-9 w-9 object-contain"
+          priority
+        />
+        <span className="text-white font-bold text-xl tracking-tight">Lumio</span>
       </div>
 
       <main className="flex flex-1 items-center justify-center px-6 pb-12">
@@ -286,20 +297,8 @@ export default function OnboardingPage() {
                   </div>
                   <p className="text-sm font-semibold text-white mb-0.5">{plan.name}</p>
                   <p className="text-xs text-white/50 mb-3">
-                    {isAnnual
-                      ? `Thanh toán hàng năm · Tiết kiệm 20% · ${plan.billingCycle}`
-                      : `Thanh toán hàng tháng · ${plan.billingCycle}`}
+                    {plan.billingCycle}
                   </p>
-                  {isAnnual && (
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <span className="text-xs bg-green-400/20 text-green-300 rounded-full px-2.5 py-0.5 font-medium">
-                        Tiết kiệm 20%
-                      </span>
-                      <span className="text-xs text-white/50 line-through">
-                        {formatCurrency(plan.price)}/tháng
-                      </span>
-                    </div>
-                  )}
                   {plan.features.length > 0 && (
                     <ul className="space-y-2">
                       {plan.features.map((f) => (
@@ -534,9 +533,7 @@ export default function OnboardingPage() {
                             <div>
                               <p className="font-bold text-gray-900 dark:text-white">{plan.name}</p>
                               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                {isAnnual
-                                  ? `Thanh toán hàng năm · Tiết kiệm 20%`
-                                  : `Thanh toán hàng tháng`}
+                                Thanh toán hàng tháng
                               </p>
                               <p className="text-xs text-gray-400 mt-0.5">{plan.billingCycle}</p>
                             </div>
@@ -547,14 +544,6 @@ export default function OnboardingPage() {
                               <p className="text-xs text-gray-400">/tháng</p>
                             </div>
                           </div>
-                          {isAnnual && (
-                            <div className="mt-3 pt-3 border-t border-indigo-200 dark:border-indigo-800/50 flex justify-between text-sm">
-                              <span className="text-gray-500">Tổng thanh toán hôm nay</span>
-                              <span className="font-bold text-gray-900 dark:text-white">
-                                {formatCurrency(displayPrice * 12)}
-                              </span>
-                            </div>
-                          )}
                         </div>
                       )}
 
