@@ -29,7 +29,7 @@ function passwordStrength(pw: string): {
   color: string;
 } {
   let score = 0;
-  if (pw.length >= 6) score++;
+  if (pw.length >= 8) score++;
   if (/[A-Z]/.test(pw)) score++;
   if (/[0-9]/.test(pw)) score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
 
   const strength = passwordStrength(password);
   const matching = confirm.length > 0 && confirm === password;
-  const canSubmit = token && password.length >= 6 && matching;
+  const canSubmit = token && password.length >= 8 && matching;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
