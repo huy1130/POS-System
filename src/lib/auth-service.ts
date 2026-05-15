@@ -1,5 +1,5 @@
 import type { AuthResponse, AuthUser } from "@/types/user";
-import { getRoleFromId } from "@/config/roles";
+import { getRoleFromBackend } from "@/lib/roles";
 
 interface AdminLoginResponse {
   accessToken: string;
@@ -17,7 +17,7 @@ interface UserLoginResponse {
 }
 
 function normalizeUser(user: AuthUser): AuthUser {
-  const role = user.role ?? getRoleFromId(user.role_id);
+  const role = getRoleFromBackend(user);
   return {
     ...user,
     role,

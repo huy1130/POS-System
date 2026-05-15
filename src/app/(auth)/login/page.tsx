@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
-import { getRedirectByRoleId, REDIRECT_MAP } from "@/config/roles";
+import { getRedirectByBackendRole } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import { adminLogin, userLogin } from "@/lib/auth-service";
 import { toast } from "sonner";
@@ -37,13 +37,11 @@ export default function LoginPage() {
         ? await adminLogin(identifier.trim(), password)
         : await userLogin(identifier.trim(), password);
       setSession(response.accessToken, response.user);
-      const redirect = response.user.role_id
-        ? getRedirectByRoleId(response.user.role_id)
-        : REDIRECT_MAP[response.user.role ?? "user"];
+      const redirect = getRedirectByBackendRole(response.user);
 
       toast.success("Đăng nhập thành công", {
-      closeButton: true,
-    });
+        closeButton: true,
+      });
 
       router.push(redirect);
     } catch (err) {
