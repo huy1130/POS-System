@@ -1,4 +1,5 @@
 // Pure config — NO "use client". Safe to import from Server Components.
+import type { ComponentType } from "react";
 import type { Role } from "@/lib/roles";
 import {
   LayoutDashboard, ShoppingCart, Package, Warehouse, CreditCard,
@@ -11,7 +12,7 @@ export interface NavItem {
   title: string;
   href:  string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  icon:  React.ComponentType<any>;
+  icon:  ComponentType<any>;
   badge?: string | number;
 }
 
@@ -20,37 +21,7 @@ export interface NavSection {
   items: NavItem[];
 }
 
-// ── Manager ───────────────────────────────────────────────────────────────────
-const managerNav: NavSection[] = [
-  {
-    title: "Overview",
-    items: [{ title: "Dashboard",      href: "/dashboard",  icon: LayoutDashboard }],
-  },
-  {
-    title: "Management",
-    items: [
-      { title: "Manage Tenants", href: "/tenants",  icon: Building2 },
-    ],
-  },
-  {
-    title: "AI Config",
-    items: [{ title: "Configure AI", href: "/ai/config", icon: BrainCircuit }],
-  },
-  {
-    title: "Analytics",
-    items: [
-      { title: "AI Statistics", href: "/ai/stats",    icon: BarChart3     },
-      { title: "Trends",        href: "/trends",      icon: TrendingUp    },
-      { title: "Audit Logs",    href: "/audit-logs",  icon: ClipboardList },
-    ],
-  },
-  {
-    title: "System",
-    items: [{ title: "Settings", href: "/settings", icon: Settings }],
-  },
-];
-
-// ── Admin ─────────────────────────────────────────────────────────────────────
+// ── Admin (MANAGER role_code backend cũng map về slug "admin") ───────────────
 const adminNav: NavSection[] = [
   {
     title: "Overview",
@@ -69,10 +40,13 @@ const adminNav: NavSection[] = [
   {
     title: "Analytics & AI",
     items: [
-      { title: "AI Charts",   href: "/ai/charts",   icon: BrainCircuit  },
-      { title: "Reports",     href: "/reports",     icon: BarChart3     },
-      { title: "Audit Logs",  href: "/audit-logs",  icon: ClipboardList },
-      { title: "Export Data", href: "/export",      icon: FileDown      },
+      { title: "Configure AI",  href: "/ai/config",   icon: BrainCircuit  },
+      { title: "AI Statistics", href: "/ai/stats",    icon: BarChart3     },
+      { title: "AI Charts",     href: "/ai/charts",   icon: BrainCircuit  },
+      { title: "Trends",        href: "/trends",      icon: TrendingUp    },
+      { title: "Reports",       href: "/reports",     icon: BarChart3     },
+      { title: "Audit Logs",    href: "/audit-logs",  icon: ClipboardList },
+      { title: "Export Data",   href: "/export",      icon: FileDown      },
     ],
   },
   {
@@ -116,7 +90,7 @@ const shopOwnerNav: NavSection[] = [
   },
 ];
 
-// ── Staff ─────────────────────────────────────────────────────────────────────
+// ── Inventory staff (slug inventory_staff, backend STAFF / INVENTORY_STAFF) ───
 const staffNav: NavSection[] = [
   {
     title: "Overview",
@@ -173,12 +147,11 @@ const cashierNav: NavSection[] = [
 
 // ── Lookup ────────────────────────────────────────────────────────────────────
 const NAV_MAP: Record<Role, NavSection[]> = {
-  manager:    managerNav,
-  admin:      adminNav,
-  shop_owner: shopOwnerNav,
-  staff:      staffNav,
-  cashier:    cashierNav,
-  user:       [],
+  admin:            adminNav,
+  shop_owner:       shopOwnerNav,
+  inventory_staff:  staffNav,
+  cashier:          cashierNav,
+  user:             [],
 };
 
 export function getNavigationByRole(role: Role): NavSection[] {
