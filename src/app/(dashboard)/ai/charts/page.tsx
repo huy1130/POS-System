@@ -11,7 +11,7 @@ import { ROLE_LABELS } from "@/lib/roles";
 
 export default function AIChartsPage() {
   return (
-    <AccessGuard roles={["admin", "shop_owner", "staff"]}>
+    <AccessGuard roles={["admin", "shop_owner", "inventory_staff"]}>
       <AIChartsContent />
     </AccessGuard>
   );
@@ -46,7 +46,7 @@ const CHART_AREAS_STAFF = [
 
 function AIChartsContent() {
   const { role } = useAuth();
-  const isStaff   = role === "staff";
+  const isStaff   = role === "inventory_staff";
   const stats      = isStaff ? STATS_STAFF      : STATS_SYSTEM;
   const chartAreas = isStaff ? CHART_AREAS_STAFF : CHART_AREAS_SYSTEM;
   const roleLabel  = ROLE_LABELS[role] ?? "User";

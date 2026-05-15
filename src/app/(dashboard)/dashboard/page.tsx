@@ -1,6 +1,6 @@
 "use client";
 
-import { DollarSign, ShoppingCart, Package, Users, AlertTriangle, Building2, BrainCircuit, ShieldCheck, CreditCard, ShoppingBag, ClipboardList, CheckCircle, Clock, TrendingUp } from "lucide-react";
+import { DollarSign, ShoppingCart, Package, Users, AlertTriangle, CreditCard, ShoppingBag, ClipboardList, CheckCircle, Clock, TrendingUp } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { StatsCard } from "@/components/shared/stats-card";
 import { DashboardShell } from "@/components/shared/DashboardShell";
@@ -19,24 +19,8 @@ const statusVariant: Record<string, "success" | "warning" | "destructive" | "sec
   cancelled: "destructive",
 };
 
-// Per-role DashboardShell configs (manager / shop_owner / staff / cashier)
+// Per-role DashboardShell configs (shop_owner / inventory_staff / cashier)
 const SHELL_CONFIGS = {
-  manager: {
-    title: "Manager Dashboard",
-    stats: [
-      { title: "Total Admins",  value: "6",   change: 1,    changeLabel: "this month",    icon: <Users className="h-4 w-4" />,       iconClassName: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300"    },
-      { title: "Total Tenants", value: "34",  change: 5,    changeLabel: "this month",    icon: <Building2 className="h-4 w-4" />,   iconClassName: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-300" },
-      { title: "AI Requests",   value: "12k", change: 18.3, changeLabel: "vs last month", icon: <BrainCircuit className="h-4 w-4" />,iconClassName: "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300" },
-      { title: "System Health", value: "99%", change: 0.1,  changeLabel: "uptime",        icon: <ShieldCheck className="h-4 w-4" />, iconClassName: "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300"  },
-    ],
-    activity: [
-      { label: "Bob Admin",   sub: "admin@pos.com · Store A", status: "active",   value: "Admin" },
-      { label: "Carol Admin", sub: "carol@pos.com · Store B", status: "active",   value: "Admin" },
-      { label: "Dan Admin",   sub: "dan@pos.com · Store C",   status: "inactive", value: "Admin" },
-    ],
-    activityTitle: "Admin Accounts",
-    showCharts: false,
-  },
   shop_owner: {
     title: "Shop Owner Dashboard",
     stats: [
@@ -53,7 +37,7 @@ const SHELL_CONFIGS = {
     activityTitle: "Recent Orders",
     showCharts: true,
   },
-  staff: {
+  inventory_staff: {
     title: "My Dashboard",
     stats: [
       { title: "My Orders Today", value: "8",  change: 2,  changeLabel: "vs yesterday", icon: <ShoppingCart className="h-4 w-4" />,  iconClassName: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300"     },
@@ -89,7 +73,7 @@ const SHELL_CONFIGS = {
 export default function DashboardPage() {
   const { role } = useAuth();
 
-  // manager / staff / cashier / shop_owner → DashboardShell
+  // inventory_staff / cashier / shop_owner → DashboardShell
   if (role in SHELL_CONFIGS) {
     const cfg = SHELL_CONFIGS[role as keyof typeof SHELL_CONFIGS];
     return <DashboardShell title={cfg.title} role={role} stats={cfg.stats} activity={cfg.activity} activityTitle={cfg.activityTitle} showCharts={cfg.showCharts} />;

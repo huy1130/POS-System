@@ -8,12 +8,13 @@ import { Eye, EyeOff, Loader2, LockKeyhole, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { AuthNavbar } from "@/components/layout/AuthNavbar";
 import { useAuth } from "@/context/AuthContext";
 import { getRedirectByBackendRole } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import { adminLogin, userLogin } from "@/lib/auth-service";
+import { ensureShopSetup } from "@/lib/ensure-shop-setup";
+import { resolveTenantShops } from "@/lib/resolve-tenant-shop";
 import { toast } from "sonner";
 
 export default function LoginPage() {
@@ -36,13 +37,47 @@ export default function LoginPage() {
       const response = isAdminLogin
         ? await adminLogin(identifier.trim(), password)
         : await userLogin(identifier.trim(), password);
-      setSession(response.accessToken, response.user);
-      const redirect = getRedirectByBackendRole(response.user);
+      let user = response.user;
+      setSession(response.accessToken, user);
 
-      toast.success("Đăng nhập thành công", {
-        closeButton: true,
-      });
+      if (!isAdminLogin) {
+        try {
+          const resolved = await resolveTenantShops(user);
+          user = resolved.user;
+          setSession(response.accessToken, user);
 
+          const shopResult = await ensureShopSetup(user);
+          if (shopResult.status === "created") {
+            user = shopResult.user;
+            setSession(response.accessToken, user);
+            toast.success("Đăng nhập thành công — đã tạo cửa hàng", {
+              closeButton: true,
+            });
+          } else if (shopResult.status === "already_exists") {
+            toast.success("Đăng nhập thành công — cửa hàng đã được thiết lập", {
+              closeButton: true,
+            });
+            router.push("/shop");
+            return;
+          } else if (shopResult.status === "needs_setup") {
+            toast.success("Đăng nhập thành công", { closeButton: true });
+            router.push("/shop");
+            return;
+          } else {
+            toast.success("Đăng nhập thành công", { closeButton: true });
+          }
+        } catch (shopErr) {
+          const shopMessage =
+            shopErr instanceof Error ? shopErr.message : "Không thể tạo cửa hàng";
+          toast.error(shopMessage);
+          router.push("/shop");
+          return;
+        }
+      } else {
+        toast.success("Đăng nhập thành công", { closeButton: true });
+      }
+
+      const redirect = getRedirectByBackendRole(user);
       router.push(redirect);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Đăng nhập thất bại";
@@ -60,9 +95,9 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      <Navbar />
+      <AuthNavbar />
 
-      <main className="flex-1 px-4 pb-10 pt-20 sm:px-6 sm:pb-12 sm:pt-24">
+      <main className="flex flex-1 items-center justify-center px-4 py-6 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -269,7 +304,6 @@ export default function LoginPage() {
           </div>
         </motion.div>
       </main>
-      <Footer />
     </div>
   );
 }

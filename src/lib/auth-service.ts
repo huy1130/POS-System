@@ -21,6 +21,9 @@ function normalizeUser(user: AuthUser): AuthUser {
   return {
     ...user,
     role,
+    role_code: user.role_code ?? null,
+    tenant_id: user.tenant_id ?? null,
+    shop_id: user.shop_id ?? null,
   };
 }
 

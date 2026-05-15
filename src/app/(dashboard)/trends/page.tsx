@@ -11,12 +11,12 @@ const stats = [
 
 export default function TrendsPage() {
   return (
-    <AccessGuard roles={["manager"]}>
+    <AccessGuard roles={["admin"]}>
       <PlaceholderPage
         title="Trends"
         description="Long-term platform trends and growth analytics"
-        role="manager"
-        breadcrumbs={[{ label: "Manager" }, { label: "Trends" }]}
+        role="admin"
+        breadcrumbs={[{ label: "Admin" }, { label: "Trends" }]}
         stats={stats}
         tableTitle="Trend History"
       />

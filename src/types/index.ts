@@ -1,5 +1,6 @@
 // ── Roles ─────────────────────────────────────────────────────────────────────
-export type Role = "manager" | "admin" | "shop_owner" | "staff" | "cashier";
+import type { Role } from "@/lib/roles";
+export type { Role } from "@/lib/roles";
 
 // ── User ──────────────────────────────────────────────────────────────────────
 export interface User {

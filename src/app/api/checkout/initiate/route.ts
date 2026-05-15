@@ -16,9 +16,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Nest: SubscriptionPurchaseController @Controller('subscriptions/purchase') + @Post('initiate')
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (SERVICE_TOKEN) headers.Authorization = `Bearer ${SERVICE_TOKEN}`;
+
     const response = await fetch(`${BACKEND_URL}/subscriptions/purchase/initiate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(body),
     });
 

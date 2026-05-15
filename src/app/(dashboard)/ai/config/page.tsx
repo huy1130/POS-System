@@ -45,7 +45,7 @@ const configs = [
 
 export default function AIConfigPage() {
   return (
-    <AccessGuard roles={["manager"]}>
+    <AccessGuard roles={["admin"]}>
       <AIConfigContent />
     </AccessGuard>
   );
@@ -59,8 +59,8 @@ function AIConfigContent() {
         <PageHeader
           title="Configure AI"
           description="Manage AI features and settings for the entire platform"
-          role="manager"
-          breadcrumbs={[{ label: "Manager" }, { label: "Configure AI" }]}
+          role="admin"
+          breadcrumbs={[{ label: "Admin" }, { label: "Configure AI" }]}
         />
         <div className="grid gap-6 lg:grid-cols-3">
           {configs.map((cfg) => (
