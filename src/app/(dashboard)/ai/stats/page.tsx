@@ -11,12 +11,12 @@ const stats = [
 
 export default function AIStatsPage() {
   return (
-    <AccessGuard roles={["manager"]}>
+    <AccessGuard roles={["admin"]}>
       <PlaceholderPage
         title="AI Statistics"
         description="Platform-wide AI usage metrics and performance data"
-        role="manager"
-        breadcrumbs={[{ label: "Manager" }, { label: "AI Statistics" }]}
+        role="admin"
+        breadcrumbs={[{ label: "Admin" }, { label: "AI Statistics" }]}
         stats={stats}
         tableTitle="AI Usage Log"
       />

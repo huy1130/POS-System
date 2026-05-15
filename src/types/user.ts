@@ -1,4 +1,4 @@
-import type { Role } from "@/config/roles";
+import type { Role } from "@/lib/roles";
 
 export interface AuthUser {
   id: string | number;

@@ -136,9 +136,9 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {[
-                    { name: "Alice Manager", email: "manager@pos.com", role: "manager" },
-                    { name: "Bob Admin", email: "admin@pos.com", role: "admin" },
-                    { name: "Carol Staff", email: "staff@pos.com", role: "staff" },
+                    { name: "Alice Admin", email: "admin@pos.com", role: "admin" },
+                    { name: "Bob Admin", email: "bob@pos.com", role: "admin" },
+                    { name: "Carol Staff", email: "staff@pos.com", role: "inventory_staff" },
                     { name: "Dave Cashier", email: "cashier@pos.com", role: "cashier" },
                   ].map((user) => (
                     <div key={user.email} className="flex items-center justify-between rounded-lg border p-3">

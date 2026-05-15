@@ -7,7 +7,7 @@ import {
   getStoredShopForTenant,
   markTenantHasShop,
 } from "@/lib/shop-storage";
-import { shopService } from "@/services/shopService";
+import { shopService } from "@/lib/services/shopService";
 import type { Shop } from "@/types/shop";
 import type { AuthUser } from "@/types/user";
 

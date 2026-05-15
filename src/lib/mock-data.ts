@@ -8,9 +8,9 @@ import type {
 } from "@/types";
 
 export const mockUsers: User[] = [
-  { id: "1", name: "Alice Manager", email: "manager@pos.com", role: "manager", createdAt: "2024-01-01" },
-  { id: "2", name: "Bob Admin", email: "admin@pos.com", role: "admin", createdAt: "2024-01-02" },
-  { id: "3", name: "Carol Staff", email: "staff@pos.com", role: "staff", createdAt: "2024-01-03" },
+  { id: "1", name: "Alice Admin", email: "admin@pos.com", role: "admin", createdAt: "2024-01-01" },
+  { id: "2", name: "Bob Admin", email: "bob@pos.com", role: "admin", createdAt: "2024-01-02" },
+  { id: "3", name: "Carol Staff", email: "staff@pos.com", role: "inventory_staff", createdAt: "2024-01-03" },
   { id: "4", name: "Dave Cashier", email: "cashier@pos.com", role: "cashier", createdAt: "2024-01-04" },
 ];
 

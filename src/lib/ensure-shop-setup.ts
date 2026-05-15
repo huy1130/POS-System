@@ -1,4 +1,4 @@
-import { getRoleFromId } from "@/config/roles";
+import { getRoleFromBackend } from "@/lib/roles";
 import { isShopLimitReachedError } from "@/lib/shop-errors";
 import { readPendingShop, clearPendingShop } from "@/lib/pending-shop";
 import {
@@ -7,13 +7,11 @@ import {
   getStoredShopForTenant,
 } from "@/lib/shop-storage";
 import { resolveTenantShops } from "@/lib/resolve-tenant-shop";
-import { shopService } from "@/services/shopService";
+import { shopService } from "@/lib/services/shopService";
 import type { AuthUser } from "@/types/user";
 
 export function isShopOwnerUser(user: AuthUser): boolean {
-  if (user.role_code === "SHOPOWNER") return true;
-  if (user.role === "shop_owner") return true;
-  return getRoleFromId(user.role_id) === "shop_owner";
+  return getRoleFromBackend(user) === "shop_owner";
 }
 
 /** Shop owner sau PayOS thường chưa có shop_id cho đến khi POST /shops */

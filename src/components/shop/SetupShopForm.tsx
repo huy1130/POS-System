@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
-import { getRedirectByRoleId } from "@/config/roles";
+import { getRedirectByBackendRole } from "@/lib/roles";
 import { readPendingShop, clearPendingShop } from "@/lib/pending-shop";
 import { isShopLimitReachedError } from "@/lib/shop-errors";
 import { saveShop, saveShopSnapshot } from "@/lib/shop-storage";
-import { shopService } from "@/services/shopService";
+import { shopService } from "@/lib/services/shopService";
 import { toast } from "sonner";
 
 interface SetupShopFormProps {
@@ -62,7 +62,7 @@ export function SetupShopForm({
       toast.success("Đã tạo cửa hàng thành công");
 
       if (redirectAfterCreate) {
-        router.push(getRedirectByRoleId(user.role_id));
+        router.push(getRedirectByBackendRole(user));
       } else {
         router.refresh();
       }

@@ -2,25 +2,20 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Loader2, Check } from "lucide-react";
+import { Eye, EyeOff, Loader2, LockKeyhole, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthNavbar } from "@/components/layout/AuthNavbar";
 import { useAuth } from "@/context/AuthContext";
-import { getRedirectByRoleId, REDIRECT_MAP } from "@/config/roles";
+import { getRedirectByBackendRole } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import { adminLogin, userLogin } from "@/lib/auth-service";
 import { ensureShopSetup } from "@/lib/ensure-shop-setup";
 import { resolveTenantShops } from "@/lib/resolve-tenant-shop";
 import { toast } from "sonner";
-
-const FEATURES = [
-  "Quản lý đơn hàng realtime",
-  "Báo cáo doanh thu chi tiết",
-  "Quản lý kho hàng tự động",
-];
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,7 +37,6 @@ export default function LoginPage() {
       const response = isAdminLogin
         ? await adminLogin(identifier.trim(), password)
         : await userLogin(identifier.trim(), password);
-
       let user = response.user;
       setSession(response.accessToken, user);
 
@@ -56,17 +50,21 @@ export default function LoginPage() {
           if (shopResult.status === "created") {
             user = shopResult.user;
             setSession(response.accessToken, user);
-            toast.success("Đăng nhập thành công — đã tạo cửa hàng");
+            toast.success("Đăng nhập thành công — đã tạo cửa hàng", {
+              closeButton: true,
+            });
           } else if (shopResult.status === "already_exists") {
-            toast.success("Đăng nhập thành công — cửa hàng đã được thiết lập");
+            toast.success("Đăng nhập thành công — cửa hàng đã được thiết lập", {
+              closeButton: true,
+            });
             router.push("/shop");
             return;
           } else if (shopResult.status === "needs_setup") {
-            toast.success("Đăng nhập thành công");
+            toast.success("Đăng nhập thành công", { closeButton: true });
             router.push("/shop");
             return;
           } else {
-            toast.success("Đăng nhập thành công");
+            toast.success("Đăng nhập thành công", { closeButton: true });
           }
         } catch (shopErr) {
           const shopMessage =
@@ -76,13 +74,10 @@ export default function LoginPage() {
           return;
         }
       } else {
-        toast.success("Đăng nhập thành công");
+        toast.success("Đăng nhập thành công", { closeButton: true });
       }
 
-      const redirect = user.role_id
-        ? getRedirectByRoleId(user.role_id)
-        : REDIRECT_MAP[user.role ?? "user"];
-
+      const redirect = getRedirectByBackendRole(user);
       router.push(redirect);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Đăng nhập thất bại";
@@ -99,192 +94,216 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden">
-      {/* ── Video background ─────────────────────────────────────────────── */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 h-full w-full object-cover"
-        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260331_074327_a4d6275d-82d9-4c83-bfbe-f1fb2213c17c.mp4"
-      />
-      {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-black/55 backdrop-blur-[1px]" />
+    <div className="flex min-h-screen flex-col bg-white">
+      <AuthNavbar />
 
-      {/* ── Page content ─────────────────────────────────────────────────── */}
-      <div className="relative z-10 flex min-h-screen flex-col">
-        <AuthNavbar />
-
-        <main className="flex flex-1 items-center justify-center px-6 pt-24 pb-12">
-          <div className="mx-auto w-full max-w-5xl flex items-center gap-14">
-            {/* ── LEFT: Branding text ──────────────────────────────────────── */}
-            <motion.div
-              initial={{ opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="hidden lg:block flex-1"
+      <main className="flex flex-1 items-center justify-center px-4 py-6 sm:px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto w-full max-w-[62rem] overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-xl"
+        >
+          <div className="grid min-h-[530px] md:grid-cols-2">
+            <motion.section
+              layout
+              transition={{ type: "spring", stiffness: 240, damping: 30 }}
+              className={cn(
+                "relative min-h-[280px] overflow-hidden",
+                isAdminLogin ? "md:order-2" : "md:order-1",
+              )}
             >
-              <h2 className="text-4xl font-extrabold leading-tight mb-4 text-white drop-shadow-md">
-                Quản lý bán hàng
-                <br />
-                thông minh
-              </h2>
-              <p className="text-white/70 text-base leading-relaxed mb-10 max-w-xs">
-                Nền tảng F&amp;B hiện đại, từ đơn hàng đến báo cáo.
-              </p>
-              <ul className="space-y-4">
-                {FEATURES.map((f) => (
-                  <li key={f} className="flex items-center gap-3">
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20">
-                      <Check className="h-3 w-3 text-white" />
-                    </div>
-                    <span className="text-white/85 text-sm font-medium">
-                      {f}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            {/* ── RIGHT: Indigo card ───────────────────────────────────────── */}
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
-              className="w-full max-w-[420px] shrink-0"
-            >
-              <div className="rounded-2xl bg-indigo-600 dark:bg-indigo-600/95 shadow-2xl shadow-indigo-300/30 dark:shadow-indigo-950/40 overflow-hidden">
-                {/* Card header */}
-                <div className="px-8 pt-8 pb-6 border-b border-indigo-500/50">
-                  <h1 className="text-xl font-bold text-white">Đăng nhập</h1>
-                </div>
-
-                {/* Card body */}
-                <div className="px-8 py-6">
-                  {/* Error banner */}
-                  <AnimatePresence>
-                    {error && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                        animate={{
-                          opacity: 1,
-                          height: "auto",
-                          marginBottom: 16,
-                        }}
-                        exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                        className="rounded-lg border border-red-300/40 bg-red-500/20 px-3 py-2.5 text-sm text-red-100 overflow-hidden"
-                      >
-                        {error}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <form onSubmit={handleSubmit} className="space-y-4">
+              <Image
+                src="/images/image1.jpg"
+                alt="Coffee shop"
+                fill
+                priority
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/55 via-slate-900/20 to-transparent" />
+              <div className="absolute left-6 right-6 top-6 text-white md:left-8 md:right-8 md:top-8">
+                <AnimatePresence mode="wait">
+                  {isAdminLogin ? (
                     <motion.div
-                      animate={
-                        shake ? { x: [-8, 8, -6, 6, -3, 3, 0] } : { x: 0 }
-                      }
-                      transition={{ duration: 0.45 }}
-                      className="space-y-4"
+                      key="admin-welcome"
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -12 }}
+                      transition={{ duration: 0.3 }}
                     >
-                      {/* Email */}
-                      <div className="space-y-1.5">
-                        <Label className="text-sm font-medium text-indigo-100">
-                          Email hoặc username
-                        </Label>
+                      <p className="text-[42px] font-bold leading-tight">
+                        Xin chào!
+                      </p>
+                      <p className="mt-2 text-[34px] leading-tight">Admin.</p>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="user-welcome"
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -12 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <p className="text-[42px] font-bold leading-tight">
+                        Xin chào
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.section>
+
+            <motion.section
+              layout
+              transition={{ type: "spring", stiffness: 240, damping: 30 }}
+              className={cn(
+                "flex items-center px-5 py-7 sm:px-7 md:px-8",
+                isAdminLogin ? "md:order-1" : "md:order-2",
+              )}
+            >
+              <div className="w-full">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={isAdminLogin ? "admin-title" : "user-title"}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-800">
+                      {isAdminLogin ? "Admin" : "Đăng nhập"}
+                    </h1>
+                    <p className="mt-2 text-sm text-slate-500">
+                      {isAdminLogin
+                        ? "Dùng tài khoản admin để quản trị hệ thống"
+                        : "Đăng nhập để quản lý cửa hàng của bạn"}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{
+                        opacity: 0,
+                        height: 0,
+                        marginTop: 0,
+                        marginBottom: 0,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        height: "auto",
+                        marginTop: 20,
+                        marginBottom: 0,
+                      }}
+                      exit={{
+                        opacity: 0,
+                        height: 0,
+                        marginTop: 0,
+                        marginBottom: 0,
+                      }}
+                      className="overflow-hidden rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+                  <motion.div
+                    animate={shake ? { x: [-8, 8, -6, 6, -3, 3, 0] } : { x: 0 }}
+                    transition={{ duration: 0.45 }}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-slate-600">
+                        {isAdminLogin ? "Email" : "Email"}
+                      </Label>
+                      <div className="relative">
                         <Input
                           type="text"
-                          placeholder="you@lumio.app"
+                          placeholder={
+                            isAdminLogin ? "admin@lumio.app" : "you@lumio.app"
+                          }
                           value={identifier}
                           onChange={(e) => setIdentifier(e.target.value)}
                           required
-                          className="h-11 rounded-lg border-indigo-400/60 bg-indigo-500/40 text-white placeholder:text-indigo-300 focus-visible:ring-white/40 focus-visible:border-white/60"
+                          className="h-11 rounded-xl border-slate-200 bg-slate-50 pr-10 text-slate-800 placeholder:text-slate-400 focus-visible:ring-indigo-200"
                         />
+                        {isAdminLogin ? (
+                          <LockKeyhole className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        ) : (
+                          <UserRound className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        )}
                       </div>
-
-                      {/* Password */}
-                      <div className="space-y-1.5">
-                        <Label className="text-sm font-medium text-indigo-100">
-                          Mật khẩu
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            type={showPw ? "text" : "password"}
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className="h-11 rounded-lg border-indigo-400/60 bg-indigo-500/40 text-white placeholder:text-indigo-300 pr-10 focus-visible:ring-white/40 focus-visible:border-white/60"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPw(!showPw)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-300 hover:text-white transition-colors"
-                          >
-                            {showPw ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                    {/* Forgot Password */}
-                    <div className="flex items-center justify-between">
-                      <a
-                        href="/forgot-password"
-                        className="text-sm font-medium text-indigo-200 hover:text-white transition-colors"
-                      >
-                        Quên mật khẩu?
-                      </a>
                     </div>
 
-                    <label className="flex items-center gap-2 text-sm text-indigo-200 cursor-pointer select-none">
-                      <div
-                        onClick={() => setIsAdminLogin(!isAdminLogin)}
-                        className={cn(
-                          "flex h-4 w-4 items-center justify-center rounded border transition-colors",
-                          isAdminLogin
-                            ? "border-white bg-white"
-                            : "border-indigo-400/60 bg-indigo-500/30",
-                        )}
-                      >
-                        {isAdminLogin && (
-                          <Check className="h-2.5 w-2.5 text-indigo-600" />
-                        )}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-slate-600">
+                        Mật khẩu
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          type={showPw ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          className="h-11 rounded-xl border-slate-200 bg-slate-50 pr-10 text-slate-800 placeholder:text-slate-400 focus-visible:ring-indigo-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPw(!showPw)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
+                        >
+                          {showPw ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
-                      Đăng nhập tài khoản admin
-                    </label>
+                    </div>
+                  </motion.div>
 
-                    {/* Submit */}
-                    <Button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full h-11 rounded-lg font-semibold bg-white text-indigo-600 hover:bg-indigo-50 text-sm shadow-sm"
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <a
+                      href="/forgot-password"
+                      className="font-medium text-slate-500 transition-colors hover:text-indigo-600"
                     >
-                      {loading ? (
-                        <span className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Đang đăng nhập…
-                        </span>
-                      ) : (
-                        "Đăng nhập"
-                      )}
-                    </Button>
-                  </form>
-                </div>
+                      Quên mật khẩu?
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setIsAdminLogin((prev) => !prev)}
+                      className="rounded-full bg-slate-100 px-4 py-1.5 font-semibold text-slate-700 transition-all hover:bg-indigo-100 hover:text-indigo-700"
+                    >
+                      {isAdminLogin ? "Quay lại đăng nhập" : "Admin"}
+                    </button>
+                  </div>
 
-                {/* Card footer */}
-                <div className="border-t border-indigo-500/50 px-8 py-4 text-center text-sm text-indigo-200">
-                  Liên hệ admin nếu gặp sự cố khi đăng nhập.
-                </div>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="h-11 w-full rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-base font-semibold text-white hover:from-indigo-600 hover:to-violet-700"
+                  >
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Đang đăng nhập...
+                      </span>
+                    ) : isAdminLogin ? (
+                      "Đăng nhập"
+                    ) : (
+                      "Đăng nhập"
+                    )}
+                  </Button>
+                </form>
               </div>
-            </motion.div>
+            </motion.section>
           </div>
-        </main>
-      </div>
+        </motion.div>
+      </main>
     </div>
   );
 }

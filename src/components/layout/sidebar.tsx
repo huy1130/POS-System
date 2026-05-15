@@ -9,12 +9,12 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import { ROLE_LABELS, ROLE_COLORS } from "@/config/roles";
+import { ROLE_LABELS, ROLE_COLORS } from "@/lib/roles";
 import { getNavigationByRole, type NavSection } from "@/config/navigation";
 import { shouldShowShopSetup } from "@/lib/ensure-shop-setup";
 import { getStoredShopForTenant } from "@/lib/shop-storage";
 import { pickPrimaryShop } from "@/lib/pick-primary-shop";
-import { shopService } from "@/services/shopService";
+import { shopService } from "@/lib/services/shopService";
 
 export function Sidebar() {
   const pathname = usePathname();

@@ -23,7 +23,7 @@ import type { Product } from "@/types";
 
 export default function OrdersPage() {
   return (
-    <AccessGuard roles={["admin", "shop_owner", "staff"]}>
+    <AccessGuard roles={["admin", "shop_owner", "inventory_staff"]}>
       <OrdersContent />
     </AccessGuard>
   );
@@ -31,7 +31,7 @@ export default function OrdersPage() {
 
 function OrdersContent() {
   const { role } = useAuth();
-  if (role === "staff")      return <StaffOrdersView />;
+  if (role === "inventory_staff") return <StaffOrdersView />;
   if (role === "shop_owner") return <ShopOwnerOrdersView />;
   return <AdminOrdersView />;
 }
