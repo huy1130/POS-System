@@ -15,6 +15,8 @@ type ProxyOptions = {
   body?: unknown;
 };
 
+const NO_BODY_STATUSES = new Set([204, 205, 304]);
+
 function normalizeMessage(body: unknown): string | undefined {
   const message = (body as { message?: string | string[] } | undefined)?.message;
   if (Array.isArray(message)) return message.join(" ");
@@ -47,6 +49,10 @@ export async function proxyCustomerRequest({
       body: body !== undefined ? JSON.stringify(body) : undefined,
       cache: "no-store",
     });
+
+    if (NO_BODY_STATUSES.has(response.status)) {
+      return new NextResponse(null, { status: response.status });
+    }
 
     const data = await response.json().catch(() => ({}));
 

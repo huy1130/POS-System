@@ -132,13 +132,6 @@ export default function CustomersPage() {
     return new Map(tenants.map((tenant) => [tenant.id, tenant] as const));
   }, [tenants]);
 
-  const selectedTenant = useMemo(() => {
-    const selectedId = Number(form.tenant_id);
-    return Number.isFinite(selectedId)
-      ? (tenantById.get(selectedId) ?? null)
-      : null;
-  }, [form.tenant_id, tenantById]);
-
   const canSubmit = Boolean(
     form.full_name.trim() &&
     form.phone.trim() &&
@@ -328,7 +321,7 @@ export default function CustomersPage() {
       nextErrors.phone = "Vui lòng nhập số điện thoại";
     } else if (!/^\d{8,15}$/.test(phone)) {
       nextErrors.phone =
-        "Số điện thoại chưa hợp lệ.Vui lòng nhập số điên thoại từ 8 đến 15 chữ số!";
+        "Số điện thoại chưa hợp lệ. Vui lòng nhập số điện thoại từ 8 đến 15 chữ số!";
     }
 
     if (!tenantId) {

@@ -131,7 +131,7 @@ const cashierNav: NavSection[] = [
     items: [
       { title: "Payments",  href: "/payments",  icon: CreditCard  },
       { title: "Checkout",  href: "/checkout",  icon: ShoppingBag },
-      { title: "Customers", href: "/customers", icon: Users       },
+      { title: "Khách hàng",href: "/customers", icon: Users       },
     ],
   },
   {
